@@ -1,15 +1,15 @@
 #include "pch.h"
-#include "OpenGL.h"
+#include "Renderer.h"
 
 namespace WallpaperAPI
 {
-  OpenGL::OpenGL(HWND hWnd, HDC windowDeviceContext)
+  Renderer::Renderer(HWND hWnd, HDC windowDeviceContext)
     : m_hWnd(hWnd), m_windowDeviceContext(windowDeviceContext)
   {
     Init();
   }
 
-  void OpenGL::Init()
+  void Renderer::CreateOpenGLContext()
   {
     // https://www.khronos.org/opengl/wiki/Creating_an_OpenGL_Context_%28WGL%29
     PIXELFORMATDESCRIPTOR pfd =
@@ -37,33 +37,50 @@ namespace WallpaperAPI
 
     m_openGLRenderingContext = wglCreateContext(m_windowDeviceContext);
     wglMakeCurrent(m_windowDeviceContext, m_openGLRenderingContext);
-
-    m_initialized = gladLoadGL();
   }
 
-  OpenGL::~OpenGL()
+  void Renderer::Init()
+  {
+    CreateOpenGLContext();
+    if (!(m_initialized = gladLoadGL())) {
+      throw std::exception("Couldn't load Glad!");
+    }
+    glEnable(GL_DEBUG_OUTPUT);
+
+    m_shader.Create("resources/shaders/vertex.glsl", "resources/shaders/fragment.glsl");
+    m_shader.Use();
+  }
+
+  Renderer::~Renderer()
   {
     wglDeleteContext(m_openGLRenderingContext);
   }
 
-  HWND OpenGL::GetHWnd()
+  HWND Renderer::GetHWnd()
   {
     return m_hWnd;
   }
 
-  void OpenGL::SwapBuffers()
+  void Renderer::SwapBuffers()
   {
     ::SwapBuffers(m_windowDeviceContext);
   }
 
-  void OpenGL::SetViewport(RECT& rect)
+  void Renderer::SetViewport(RECT& rect)
   {
     glViewport(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
   }
 
-  void OpenGL::SetViewport(int x, int y, int width, int height)
+  void Renderer::SetViewport(int x, int y, int width, int height)
   {
     glViewport(x, y, width, height);
   }
 
+  void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+    std::cout << "GL CALLBACK: " << (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "") << " type = " << type << ", severity = " << severity << ", message = " << message << std::endl;
+  }
+
+  void Renderer::SetMessageCallback() {
+    glDebugMessageCallback(MessageCallback, 0);
+  }
 }

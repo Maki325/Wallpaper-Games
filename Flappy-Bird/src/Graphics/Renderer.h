@@ -1,13 +1,15 @@
 #pragma once
+#include "ShaderProgram.h"
 
 namespace WallpaperAPI
 {
-  class OpenGL
+  class Renderer
   {
   public:
-    OpenGL(HWND hWnd, HDC windowDeviceContext);
-    ~OpenGL();
+    Renderer(HWND hWnd, HDC windowDeviceContext);
+    ~Renderer();
 
+    void CreateOpenGLContext();
     void Init();
 
     void SwapBuffers();
@@ -16,11 +18,13 @@ namespace WallpaperAPI
 
     HWND GetHWnd();
     bool IsInitialized() { return m_initialized; }
+    void SetMessageCallback();
   private:
+    ShaderProgram m_shader;
+
     HWND m_hWnd;
     HGLRC m_openGLRenderingContext;
     HDC m_windowDeviceContext;
     bool m_initialized;
   };
 }
-

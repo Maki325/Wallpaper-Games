@@ -3,7 +3,7 @@
 #include "Monitor.h"
 #include "../Utils/ConsoleTask.h"
 #include "../Utils/Utils.h"
-#include "../Graphics/OpenGL.h"
+#include "../Graphics/Renderer.h"
 
 namespace WallpaperAPI
 {
@@ -23,11 +23,10 @@ namespace WallpaperAPI
 
     HWND m_desktopHWnd;
     HDC m_desktopDC;
-    OpenGL m_openGL;
+    Renderer m_renderer;
     unsigned int m_textureId;
 
     static std::mutex s_mutex;
     static std::queue<Event> s_messages;
   };
 }
-

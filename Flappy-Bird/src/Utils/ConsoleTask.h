@@ -12,4 +12,3 @@ namespace WallpaperAPI
     static void InitConsole();
   };
 }
-

@@ -13,6 +13,7 @@
 #include <io.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <thread>
 #include <chrono>
 #include <future>

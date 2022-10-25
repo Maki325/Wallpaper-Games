@@ -1,0 +1,3 @@
+[submodule "Flappy-Bird/vendor/glm"]
+	path = Flappy-Bird/vendor/glm
+	url = https://github.com/g-truc/glm

@@ -1,13 +1,13 @@
 workspace "Wallpaper-Games"
-	architecture "x86_64"
-	startproject "Flappy-Bird"
+  architecture "x86_64"
+  startproject "Flappy-Bird"
 
-	configurations
-	{
-		"Debug",
-		"Release",
-		"Dist"
-	}
+  configurations
+  {
+    "Debug",
+    "Release",
+    "Dist"
+  }
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 OPENCV_DIR = os.getenv("OPENCV_DIR")
@@ -15,74 +15,76 @@ OPENCV_DIR = os.getenv("OPENCV_DIR")
 -- Include directories relative to root folder (solution directory)
 IncludeDir = {}
 IncludeDir["Glad"] = "%{wks.location}/Flappy-Bird/vendor/Glad/include"
+IncludeDir["glm"] = "%{wks.location}/Flappy-Bird/vendor/glm"
 
 group "Dependencies"
-	include "Flappy-Bird/vendor/Glad"
+  include "Flappy-Bird/vendor/Glad"
 group ""
 
 project "Flappy-Bird"
-	location "Flappy-Bird"
-	kind "WindowedApp"
-	language "C++"
-	cppdialect "C++17"
-	staticruntime "off"
+  location "Flappy-Bird"
+  kind "WindowedApp"
+  language "C++"
+  cppdialect "C++17"
+  staticruntime "off"
 
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+  targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+  objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-	pchheader "pch.h"
-	pchsource "Flappy-Bird/src/pch.cpp"
+  pchheader "pch.h"
+  pchsource "Flappy-Bird/src/pch.cpp"
 
-	files
-	{
-		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
-	}
+  files
+  {
+    "%{prj.name}/src/**.h",
+    "%{prj.name}/src/**.cpp"
+  }
 
-	defines
-	{
-		"_CRT_SECURE_NO_WARNINGS"
-	}
+  defines
+  {
+    "_CRT_SECURE_NO_WARNINGS"
+  }
 
-	includedirs
-	{
-		"%{prj.name}/src",
-		"%{IncludeDir.Glad}",
-		"%{OPENCV_DIR}/include/"
-	}
+  includedirs
+  {
+    "%{prj.name}/src",
+    "%{IncludeDir.Glad}",
+    "%{IncludeDir.glm}",
+    "%{OPENCV_DIR}/include/"
+  }
 
-	links 
-	{
-		"Glad",
-		"opengl32.lib",
-		"%{OPENCV_DIR}/x64/vc15/lib/*"
-	}
-	
-	filter "system:windows"
-		systemversion "latest"
+  links
+  {
+    "Glad",
+    "opengl32.lib",
+    "%{OPENCV_DIR}/x64/vc15/lib/*"
+  }
 
-		defines
-		{
-		}
+  filter "system:windows"
+    systemversion "latest"
 
-	filter "configurations:Debug"
-		defines
-		{
-		}
-		runtime "Debug"
-		symbols "on"
+    defines
+    {
+    }
 
-	filter "configurations:Release"
-		defines
-		{
-		}
-		runtime "Release"
-		optimize "on"
+  filter "configurations:Debug"
+    defines
+    {
+    }
+    runtime "Debug"
+    symbols "on"
 
-	filter "configurations:Dist"
-		defines
-		{
-		}
-		runtime "Release"
-		optimize "on"
+  filter "configurations:Release"
+    defines
+    {
+    }
+    runtime "Release"
+    optimize "on"
+
+  filter "configurations:Dist"
+    defines
+    {
+    }
+    runtime "Release"
+    optimize "on"
 
