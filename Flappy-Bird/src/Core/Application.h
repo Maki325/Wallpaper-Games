@@ -4,6 +4,8 @@
 #include "../Utils/ConsoleTask.h"
 #include "../Utils/Utils.h"
 #include "../Graphics/Renderer.h"
+#include "../Entity/Entity.h"
+#include "MonitorManager.h"
 
 namespace WallpaperAPI
 {
@@ -24,7 +26,9 @@ namespace WallpaperAPI
     HWND m_desktopHWnd;
     HDC m_desktopDC;
     Renderer m_renderer;
-    unsigned int m_textureId;
+    MonitorManager m_monitorManager;
+
+    std::vector<Entity> m_entities;
 
     static std::mutex s_mutex;
     static std::queue<Event> s_messages;

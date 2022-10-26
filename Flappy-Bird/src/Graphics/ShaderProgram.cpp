@@ -35,6 +35,17 @@ namespace WallpaperAPI
     glUseProgram(m_shaderProgram);
   }
 
+  void ShaderProgram::LoadMatrix4f(const char* variable, float *p_mat4) {
+    size_t len = strnlen(variable, 255);
+    for (size_t i = 0; i < len; i++) {
+      if (!isalnum(variable[i])) {
+        throw std::runtime_error("Unsupported character in shader uniform name!");
+      }
+    }
+    unsigned int transformLoc = glGetUniformLocation(m_shaderProgram, variable);
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, p_mat4);
+  }
+
   unsigned int ShaderProgram::GenerateShader(const char *file, int type) {
     unsigned int shaderId = glCreateShader(type);
 

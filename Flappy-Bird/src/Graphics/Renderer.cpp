@@ -45,6 +45,7 @@ namespace WallpaperAPI
     if (!(m_initialized = gladLoadGL())) {
       throw std::exception("Couldn't load Glad!");
     }
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_DEBUG_OUTPUT);
 
     m_shader.Create("resources/shaders/vertex.glsl", "resources/shaders/fragment.glsl");
@@ -59,6 +60,11 @@ namespace WallpaperAPI
   HWND Renderer::GetHWnd()
   {
     return m_hWnd;
+  }
+
+  ShaderProgram& Renderer::GetShaderProgram()
+  {
+    return m_shader;
   }
 
   void Renderer::SwapBuffers()

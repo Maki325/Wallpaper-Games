@@ -1,8 +1,5 @@
 #include "pch.h"
 #include "Application.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "Graphics/stb_image.h"
-#include "MonitorManager.h"
 #include "Entity/Entity.h"
 
 namespace WallpaperAPI
@@ -10,8 +7,26 @@ namespace WallpaperAPI
 
   Application::Application()
     : m_desktopHWnd(Utils::GetWallpaperWindow()),
-        m_desktopDC(GetDC(m_desktopHWnd)), m_renderer(Renderer(m_desktopHWnd, m_desktopDC)) {
+        m_desktopDC(GetDC(m_desktopHWnd)), m_renderer(Renderer(m_desktopHWnd, m_desktopDC)),
+        m_monitorManager(MonitorManager(m_desktopHWnd, m_desktopDC)) {
     srand(time(NULL));
+
+    Vertex vertices[] = {
+      // positions          // texture coords
+      { { 0.5f,  0.5f, 0.0f},   {1.0f, 1.0f} }, // top right
+      { { 0.5f, -0.5f, 0.0f},   {1.0f, 0.0f} }, // bottom right
+      { {-0.5f, -0.5f, 0.0f},   {0.0f, 0.0f} }, // bottom left
+      { {-0.5f,  0.5f, 0.0f},   {0.0f, 1.0f} }, // top left
+    };
+    glm::uvec3 indices[] = {  // note that we start from 0!
+      { 0, 1, 3 }, // first Triangle
+      { 1, 2, 3 }  // second Triangle
+    };
+
+    std::vector<Vertex> verticesVec(vertices, vertices + 4);
+    std::vector<glm::uvec3> indicesVec(indices, indices + 2);
+    Model model{ verticesVec , indicesVec };
+    m_entities.emplace_back(model, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), "resources/textures/background.jpg");
   }
 
   Application::~Application() {
@@ -29,14 +44,12 @@ namespace WallpaperAPI
     }
     std::cout << "Successfully initialized OpenGL context" << std::endl;
 
-    MonitorManager monitorManager(m_desktopHWnd, m_desktopDC);
-
-    if (monitorManager.GetMonitors().empty()) {
+    if (m_monitorManager.GetMonitors().empty()) {
       std::cout << "No monitor available!" << std::endl;
       std::cin.get();
       return;
     }
-    m_renderer.SetViewport(monitorManager.GetMonitors().at(0).area);
+    m_renderer.SetViewport(m_monitorManager.GetMonitors().at(0).area);
 
     s_mutex.lock();
     Event e{ Event::Type::EVENT_TYPE_RENDER, NULL };
@@ -60,15 +73,46 @@ namespace WallpaperAPI
             break;
           }
           case Event::Type::EVENT_TYPE_RENDER: {
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
+            RECT area = m_monitorManager.GetMonitors().at(0).area;
+            Utils::PrintRect(area);
 
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, m_textureId);
+            int monitorWidth = abs(area.right - area.left);
+            int monitorHeight = abs(area.bottom - area.top);
 
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            std::cout << "monitorWidth: " << monitorWidth << " monitorHeight: " << monitorHeight << "\n";
 
-            m_renderer.SwapBuffers();
+            glm::mat4 projection = glm::mat4(1.0f);
+            projection = glm::perspective(glm::radians(45.0f), (float)monitorWidth / (float)monitorHeight, 0.01f, 1000.0f);
+            glm::mat4 view = glm::mat4(1.0f);
+            view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+            glm::mat4 transform = glm::mat4(1.0f);
+            transform = glm::translate(transform, glm::vec3(0, 0, 0));
+
+            ShaderProgram& shader = m_renderer.GetShaderProgram();
+            shader.Use();
+
+            shader.LoadMatrix4f("projection", glm::value_ptr(projection));
+            shader.LoadMatrix4f("view", glm::value_ptr(view));
+
+            for (const Entity& entity : m_entities)
+            {
+              for (size_t i = 0; i < 100; i++) {
+                transform = glm::translate(transform, glm::vec3(0.005f, 0, 0));
+                shader.LoadMatrix4f("transform", glm::value_ptr(transform));
+                glBindVertexArray(entity.m_VAO);
+
+                glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, entity.m_texture.textureId);
+
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+                m_renderer.SwapBuffers();
+              }
+            }
             break;
           }
         }
@@ -91,75 +135,12 @@ namespace WallpaperAPI
     if (!m_renderer.IsInitialized()) return false;
 
     {
-      const int width = 1920, height = 1080;
+      RECT &area = m_monitorManager.GetMonitors().at(0).area;
+
+      int width = abs(area.right - area.left);
+      int height = abs(area.bottom - area.top);
       glViewport(0, 0, width, height);
     }
-
-    Vertex vertices[] = {
-      // positions          // texture coords
-      { { 0.5f,  0.5f, 0.0f},   {1.0f, 1.0f} }, // top right
-      { { 0.5f, -0.5f, 0.0f},   {1.0f, 0.0f} }, // bottom right
-      { {-0.5f, -0.5f, 0.0f},   {0.0f, 0.0f} }, // bottom left
-      { {-0.5f,  0.5f, 0.0f},   {0.0f, 1.0f} }, // top left 
-    };
-    glm::uvec3 indices[] = {  // note that we start from 0!
-      { 0, 1, 3 }, // first Triangle
-      { 1, 2, 3 }  // second Triangle
-    };
-
-    std::vector<Vertex> verticesVec(vertices, vertices + 4);
-    std::vector<glm::uvec3> indicesVec(indices, indices + 2);
-    Model model{ verticesVec , indicesVec };
-
-    unsigned int VBO, VAO, EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, model.vertices.size() * sizeof(Vertex), model.vertices.data(), GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, model.vertices.size() * sizeof(glm::uvec3), model.indices.data(), GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // load and create a texture 
-    // texture 1
-    // ---------
-    glGenTextures(1, &m_textureId);
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char* data = stbi_load("resources/textures/background.jpg", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-      glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-      std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-
-    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
-    // -------------------------------------------------------------------------------------------
-    // glUseProgram(shaderProgram); // don't forget to activate/use the shader before setting uniforms!
 
     return true;
   }

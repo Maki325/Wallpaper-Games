@@ -14,12 +14,33 @@ namespace WallpaperAPI
     std::vector<glm::uvec3> indices;
   };
 
+  class Texture
+  {
+  public:
+    Texture(const char *location);
+    const char *location;
+    unsigned int textureId;
+    int width, height, colorChannels;
+  };
+
   class Entity
   {
-    Model model;
-    glm::vec3 position;
-    glm::vec3 velocity;
-    unsigned int m_textureId;
+  public:
+    Entity(Model model, glm::vec3 position, glm::vec3 velocity, glm::vec3 rotation, const char *texture);
+    ~Entity();
+
+  public:
+    void GenerateTexture();
+    void GenerateData();
+
+    Model m_model;
+    glm::vec3 m_position;
+    glm::vec3 m_velocity;
+    glm::vec3 m_rotation;
+
+    unsigned int m_VBO, m_VAO, m_EBO;
+
+    Texture m_texture;
   };
 
 }

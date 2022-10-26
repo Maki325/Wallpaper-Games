@@ -19,6 +19,8 @@ namespace WallpaperAPI
     HWND GetHWnd();
     bool IsInitialized() { return m_initialized; }
     void SetMessageCallback();
+
+    ShaderProgram& GetShaderProgram();
   private:
     ShaderProgram m_shader;
 

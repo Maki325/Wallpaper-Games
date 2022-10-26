@@ -11,6 +11,7 @@ namespace WallpaperAPI
     unsigned int ShaderProgram::GenerateShader(const char *file, int type);
     void Use();
 
+    void LoadMatrix4f(const char* variable, float *p_mat4);
   private:
     unsigned int m_shaderProgram = 0;
 
