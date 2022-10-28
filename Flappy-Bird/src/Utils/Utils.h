@@ -9,5 +9,6 @@ namespace WallpaperAPI
     void PrintRect(RECT r);
     void PrintWindowSize(HWND hWnd);
     RECT& NormalizeRect(RECT& rect);
+    std::chrono::milliseconds GetMillis();
   };
 }

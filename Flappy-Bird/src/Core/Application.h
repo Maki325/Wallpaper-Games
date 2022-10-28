@@ -6,6 +6,7 @@
 #include "../Graphics/Renderer.h"
 #include "../Entity/Entity.h"
 #include "MonitorManager.h"
+#include "InputManager.h"
 
 namespace WallpaperAPI
 {
@@ -16,8 +17,10 @@ namespace WallpaperAPI
 
     void Run();
     static void PostEvent(Event e);
+    void ProcessInput();
+    void Update();
+    void Render();
   private:
-    bool InitGraphics();
     void ResetWallpaper();
     void GetMonitors();
   private:
@@ -27,6 +30,7 @@ namespace WallpaperAPI
     HDC m_desktopDC;
     Renderer m_renderer;
     MonitorManager m_monitorManager;
+    InputManager m_inputManager;
 
     std::vector<Entity> m_entities;
 

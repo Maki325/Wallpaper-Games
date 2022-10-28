@@ -37,40 +37,6 @@ namespace WallpaperAPI
       std::cout << "RECT: {" << r.left << ", " << r.top << ", " << r.right << ", " << r.bottom << "}" << std::endl;
     }
 
-    bool InitOpenGL(HWND hWnd) {
-      // https://www.khronos.org/opengl/wiki/Creating_an_OpenGL_Context_%28WGL%29
-      PIXELFORMATDESCRIPTOR pfd =
-      {
-        sizeof(PIXELFORMATDESCRIPTOR),
-        1,
-        PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,    //Flags
-        PFD_TYPE_RGBA,        // The kind of framebuffer. RGBA or palette.
-        32,                   // Colordepth of the framebuffer.
-        0, 0, 0, 0, 0, 0,
-        0,
-        0,
-        0,
-        0, 0, 0, 0,
-        24,                   // Number of bits for the depthbuffer
-        8,                    // Number of bits for the stencilbuffer
-        0,                    // Number of Aux buffers in the framebuffer.
-        PFD_MAIN_PLANE,
-        0,
-        0, 0, 0
-      };
-
-      HDC ourWindowHandleToDeviceContext = GetDC(hWnd);
-
-      int  letWindowsChooseThisPixelFormat;
-      letWindowsChooseThisPixelFormat = ChoosePixelFormat(ourWindowHandleToDeviceContext, &pfd);
-      SetPixelFormat(ourWindowHandleToDeviceContext, letWindowsChooseThisPixelFormat, &pfd);
-
-      HGLRC ourOpenGLRenderingContext = wglCreateContext(ourWindowHandleToDeviceContext);
-      wglMakeCurrent(ourWindowHandleToDeviceContext, ourOpenGLRenderingContext);
-
-      return gladLoadGL();
-    }
-
     void PrintWindowSize(HWND hWnd) {
       RECT hwndSize;
       GetWindowRect(hWnd, &hwndSize);
@@ -88,6 +54,11 @@ namespace WallpaperAPI
       }
 
       return rect;
+    }
+  
+    std::chrono::milliseconds GetMillis()
+    {
+      return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     }
   }
 }

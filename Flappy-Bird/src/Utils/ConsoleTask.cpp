@@ -36,10 +36,6 @@ namespace WallpaperAPI
   void ConsoleTask::InitConsole()
   {
     static const WORD MAX_CONSOLE_LINES = 500;
-    int hConHandle;
-    long lStdHandle;
-    CONSOLE_SCREEN_BUFFER_INFO coninfo;
-    FILE* fp;
 
     auto stdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
