@@ -182,7 +182,7 @@ namespace WallpaperAPI
   {
     Entity &player = m_entities.at(0);
 
-    auto pos = m_inputManager.GetMousePosition();
+    /*auto pos = m_inputManager.GetMousePosition();
 
     // player.m_position.x = (pos.x - 1920) / (1920.0f / 2) - 1;
     // player.m_position.y = -1 * (pos.y / (1080.0f / 2) - 1);
@@ -217,7 +217,7 @@ namespace WallpaperAPI
     player.m_position.x = calc2.x * 1;
     player.m_position.y = calc2.y * 1;
 
-    return;
+    return;*/
 
     if (GetKeyState('W') & 0x8000)
     {
