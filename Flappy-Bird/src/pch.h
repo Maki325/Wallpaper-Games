@@ -6,6 +6,8 @@
 
 #define WM_RENDER_OPENGL (WM_USER + 1)
 
+#define GL_CHECK(x) x; {int error = 0; if((error = glGetError())) { std::cout << "GL Error: " << error << std::endl; throw std::runtime_error("OpenGL Error"); }}
+
 #include <stdio.h>
 #include <windows.h>
 #include <stdio.h>

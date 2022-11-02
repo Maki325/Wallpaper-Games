@@ -11,7 +11,7 @@ namespace WallpaperAPI
     InitMouse();
   }
 
-  bool InputManager::IsKeyDown(char key)
+  bool InputManager::IsKeyDown(Input::Key key)
   {
     return GetKeyState(key) & 0x8000;
   }
@@ -203,7 +203,7 @@ namespace WallpaperAPI
 
     for (int scancode = 0; scancode < 512; scancode++)
     {
-      if (m_keycodes[scancode] > 0)
+      if (m_keycodes[scancode] > 0 && m_keycodes[scancode] < Input::Key::Last + 1)
         m_scancodes[m_keycodes[scancode]] = scancode;
     }
   }

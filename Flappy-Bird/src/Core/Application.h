@@ -1,28 +1,33 @@
 #pragma once
 #include "Event.h"
 #include "Monitor.h"
-#include "../Utils/ConsoleTask.h"
 #include "../Utils/Utils.h"
 #include "../Graphics/Renderer.h"
 #include "../Entity/Entity.h"
+#include "../Entity/Line.h"
 #include "MonitorManager.h"
 #include "InputManager.h"
 
 namespace WallpaperAPI
 {
-  class Application {
+  enum AppState
+  {
+    INITIALIZED,
+    RUNNING,
+    FAILED
+  };
+
+  class Application
+  {
   public:
     Application();
     ~Application();
 
     void Run();
-    static void PostEvent(Event e);
-    void ProcessInput();
-    void Update();
+    void Update(float delta);
     void Render();
   private:
     void ResetWallpaper();
-    void GetMonitors();
   private:
     bool m_running = true;
 
@@ -31,10 +36,11 @@ namespace WallpaperAPI
     Renderer m_renderer;
     MonitorManager m_monitorManager;
     InputManager m_inputManager;
+    AppState m_appState = AppState::INITIALIZED;
+
+    Line m_line;
+    float m_rot = 0;
 
     std::vector<Entity> m_entities;
-
-    static std::mutex s_mutex;
-    static std::queue<Event> s_messages;
   };
 }

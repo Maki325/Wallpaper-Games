@@ -11,8 +11,13 @@ namespace WallpaperAPI
     unsigned int ShaderProgram::GenerateShader(const char *file, int type);
     void Use();
 
-    void LoadMatrix4f(const char* variable, float *p_mat4);
+    void LoadFloat(const char* variable, float f);
+    void LoadVec3(const char* variable, glm::vec3& vec3);
+    void LoadVec4(const char* variable, glm::vec4& vec4);
+    void LoadMatrix4f(const char* variable, float* p_mat4);
   private:
+    void IsValidVariable(const char* variable);
+
     unsigned int m_shaderProgram = 0;
 
     int m_success = 0;
