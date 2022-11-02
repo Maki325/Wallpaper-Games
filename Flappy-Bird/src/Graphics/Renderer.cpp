@@ -85,6 +85,25 @@ namespace WallpaperAPI
     wglDeleteContext(m_openGLRenderingContext);
   }
 
+  void Renderer::RenderEntity(Entity& entity)
+  {
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::translate(transform, entity.m_position);
+    transform = glm::scale(transform, entity.m_scale);
+    // transform = glm::rotate(transform, (float) glm::radians(m_rot), glm::vec3(0, 0, 1));
+
+    m_shader.LoadMatrix4f("transform", glm::value_ptr(transform));
+
+    GL_CHECK(glActiveTexture(GL_TEXTURE0));
+    GL_CHECK(glBindTexture(GL_TEXTURE_2D, entity.m_texture.textureId));
+
+    GL_CHECK(glBindVertexArray(entity.m_VAO));
+
+    GL_CHECK(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+
+    glBindVertexArray(0);
+  }
+
   void Renderer::RenderLine(Line &line, glm::vec3 position)
   {
     GL_CHECK(glDisable(GL_DEPTH_TEST));

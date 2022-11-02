@@ -5,6 +5,7 @@
 #include "../Graphics/Renderer.h"
 #include "../Entity/Entity.h"
 #include "../Entity/Line.h"
+#include "AABB.h"
 #include "MonitorManager.h"
 #include "InputManager.h"
 
@@ -24,10 +25,15 @@ namespace WallpaperAPI
     ~Application();
 
     void Run();
+
     void Update(float delta);
     void Render();
   private:
     void ResetWallpaper();
+    void UpdateInitialized(float delta);
+    void UpdateRunning(float delta);
+    void UpdateFailed(float delta);
+    void ScrollGround(float delta);
   private:
     bool m_running = true;
 
@@ -41,6 +47,9 @@ namespace WallpaperAPI
     Line m_line;
     float m_rot = 0;
 
-    std::vector<Entity> m_entities;
+    Entity m_player;
+    std::vector<Entity> m_ground;
+
+    std::vector<AABB> m_aabbs;
   };
 }

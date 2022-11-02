@@ -9,46 +9,43 @@ namespace WallpaperAPI
     : m_desktopHWnd(Utils::GetWallpaperWindow()),
         m_desktopDC(GetDC(m_desktopHWnd)), m_renderer(Renderer(m_desktopHWnd, m_desktopDC)),
         m_monitorManager(MonitorManager(m_desktopHWnd, m_desktopDC)), m_inputManager(m_desktopHWnd),
-        // m_line(glm::vec3(0), glm::vec3(0, 1, 0), glm::vec4(0.2, 0.2, 0.7, 1))
-        // m_line(glm::vec3(-1.22, -0.2, 0), glm::vec3(0.78, 1.8, 0), glm::vec4(0, 0, 1, 1))
-        m_line(glm::vec3(-1.0f, 0, 0.0), glm::vec3(1.0f, 0, 0.0), glm::vec4(0, 0, 1, 1))
+        m_line(glm::vec3(-1.0f, 0, 0.0), glm::vec3(1.0f, 0, 0.0), glm::vec4(0, 0, 1, 1)),
+        m_player({
+          {
+            // positions              // texture coords
+            { { 1.0f,  1.0f, 0.0f},   {1.0f, 1.0f} }, // top right
+            { { 1.0f, -1.0f, 0.0f},   {1.0f, 0.0f} }, // bottom right
+            { {-1.0f, -1.0f, 0.0f},   {0.0f, 0.0f} }, // bottom left
+            { {-1.0f,  1.0f, 0.0f},   {0.0f, 1.0f} }, // top left
+          }, {  // note that we start from 0!
+            { 0, 1, 3 }, // first Triangle
+            { 1, 2, 3 }  // second Triangle
+          }
+        }, glm::vec3(-1, 0, 0), glm::vec3(0), glm::vec3(0.25), glm::vec3(0), "resources/textures/flappy-bird.png")
   {
     srand(time(nullptr));
 
-    Vertex vertices[] = {
-      // positions              // texture coords
-      { { 1.0f,  1.0f, 0.0f},   {1.0f, 1.0f} }, // top right
-      { { 1.0f, -1.0f, 0.0f},   {1.0f, 0.0f} }, // bottom right
-      { {-1.0f, -1.0f, 0.0f},   {0.0f, 0.0f} }, // bottom left
-      { {-1.0f,  1.0f, 0.0f},   {0.0f, 1.0f} }, // top left
-    };
-    glm::uvec3 indices[] = {  // note that we start from 0!
-      { 0, 1, 3 }, // first Triangle
-      { 1, 2, 3 }  // second Triangle
+    Model model{
+      {
+        // positions              // texture coords
+        { { 1.0f,  1.0f, 0.0f},   {1.0f, 1.0f} }, // top right
+        { { 1.0f, -1.0f, 0.0f},   {1.0f, 0.0f} }, // bottom right
+        { {-1.0f, -1.0f, 0.0f},   {0.0f, 0.0f} }, // bottom left
+        { {-1.0f,  1.0f, 0.0f},   {0.0f, 1.0f} }, // top left
+      },
+      {  // note that we start from 0!
+        { 0, 1, 3 }, // first Triangle
+        { 1, 2, 3 }  // second Triangle
+      }
     };
 
-    std::vector<Vertex> verticesVec(vertices, vertices + 4);
-    std::vector<glm::uvec3> indicesVec(indices, indices + 2);
-    Model model{ verticesVec , indicesVec };
+    m_ground.emplace_back(model, glm::vec3(-1.22, -0.2, 0), glm::vec3(0), glm::vec3(1), glm::vec3(0), "resources/textures/Ground.png");
+    m_ground.emplace_back(model, glm::vec3( 0.50, -0.2, 0), glm::vec3(0), glm::vec3(1), glm::vec3(0), "resources/textures/Ground.png");
+    m_ground.emplace_back(model, glm::vec3( 2.22, -0.2, 0), glm::vec3(0), glm::vec3(1), glm::vec3(0), "resources/textures/Ground.png");
+    m_ground.emplace_back(model, glm::vec3( 3.94, -0.2, 0), glm::vec3(0), glm::vec3(1), glm::vec3(0), "resources/textures/Ground.png");
 
-
-    Vertex vertices2[] = {
-      // positions              // texture coords
-      { { 1.0f,  1.0f, 0.0f},   {1.0f, 1.0f} }, // top right
-      { { 1.0f, -1.0f, 0.0f},   {1.0f, 0.0f} }, // bottom right
-      { {-1.0f, -1.0f, 0.0f},   {0.0f, 0.0f} }, // bottom left
-      { {-1.0f,  1.0f, 0.0f},   {0.0f, 1.0f} }, // top left
-    };
-    glm::uvec3 indices2[] = {  // note that we start from 0!
-      { 0, 1, 3 }, // first Triangle
-      { 1, 2, 3 }  // second Triangle
-    };
-    std::vector<Vertex> verticesVec2(vertices2, vertices2 + 4);
-    std::vector<glm::uvec3> indicesVec2(indices2, indices2 + 2);
-    Model model2{ verticesVec2 , indicesVec2 };
-    m_entities.emplace_back(model, glm::vec3(-1, 0, 0), glm::vec3(0), glm::vec3(0.25), glm::vec3(0), "resources/textures/flappy-bird.png");
-
-    m_entities.emplace_back(model2, glm::vec3(-1.22, -0.2, 0), glm::vec3(0), glm::vec3(1), glm::vec3(0), "resources/textures/Ground.png");
+    m_aabbs.emplace_back(glm::vec2(-1,  0.0), glm::vec2(0.25));
+    m_aabbs.emplace_back(glm::vec2( 0, -1.0), glm::vec2(10, 0.5));
   }
 
   Application::~Application() {}
@@ -95,77 +92,74 @@ namespace WallpaperAPI
 
   void Application::Update(float delta)
   {
-    m_rot += 3 * 360 * delta;
-    if (m_rot >= 360) m_rot -= 360;
-    Entity& player = m_entities.at(0);
     switch (m_appState)
     {
     case WallpaperAPI::INITIALIZED:
-    {
-      if (m_inputManager.IsKeyDown(Input::Key::Space))
-      {
-        m_appState = AppState::RUNNING;
-        player.m_velocity.y = 6.0f;
-      }
+      UpdateInitialized(delta);
       break;
-    }
     case WallpaperAPI::RUNNING:
-    {
-      glm::vec3 GRAVITY(0, -4.0f, 0);
-
-      glm::vec3 velocity(GRAVITY);
-
-      velocity += player.m_velocity;
-      if (player.m_velocity.y > 0) {
-        player.m_velocity += GRAVITY * delta;
-      }
-      else {
-        player.m_velocity.y = 0;
-      }
-
-      player.m_position += (velocity * delta);
-
-      if (m_inputManager.IsKeyDown(Input::Key::Space))
-      {
-        player.m_velocity.y = 6.0f;
-      }
+      UpdateRunning(delta);
       break;
-    }
     case WallpaperAPI::FAILED:
       break;
     default:
       break;
     }
-    return;
+  }
 
+  void Application::UpdateInitialized(float delta)
+  {
+    ScrollGround(delta);
+    if (m_inputManager.IsKeyDown(Input::Key::Space))
+    {
+      m_appState = AppState::RUNNING;
+      m_player.m_velocity.y = 6.0f;
+    }
+  }
 
-    float offset = 1.0f / 60 * (m_inputManager.IsKeyDown(Input::Key::LeftShift) ? 10 : 1);
+  void Application::UpdateRunning(float delta)
+  {
+    ScrollGround(delta);
+    glm::vec3 GRAVITY(0, -4.0f, 0);
 
-    if (m_inputManager.IsKeyDown(Input::Key::W))
-    {
-      player.m_position.y += offset;
+    glm::vec3 velocity(GRAVITY);
+
+    velocity += m_player.m_velocity;
+    if (m_player.m_velocity.y > 0) {
+      m_player.m_velocity += GRAVITY * delta;
     }
-    if (m_inputManager.IsKeyDown(Input::Key::A))
-    {
-      player.m_position.x -= offset;
-    }
-    if (m_inputManager.IsKeyDown(Input::Key::S))
-    {
-      player.m_position.y -= offset;
-    }
-    if (m_inputManager.IsKeyDown(Input::Key::D))
-    {
-      player.m_position.x += offset;
+    else {
+      m_player.m_velocity.y = 0;
     }
 
+    m_player.m_position += (velocity * delta);
 
-    if (m_inputManager.IsKeyDown(Input::Key::KPSubtract))
+    if (m_inputManager.IsKeyDown(Input::Key::Space))
     {
-      player.m_scale -= glm::vec3(offset, offset, offset);
+      m_player.m_velocity.y = 6.0f;
     }
-    if (m_inputManager.IsKeyDown(Input::Key::KPAdd))
+
+    AABB& playerAABB = m_aabbs.at(0);
+    playerAABB.m_position.y = m_player.m_position.y;
+
+    if (AABB::IsColliding(playerAABB, m_aabbs.at(1)))
     {
-      player.m_scale += glm::vec3(offset, offset, offset);
+      m_appState = AppState::FAILED;
+    }
+  }
+
+  void Application::UpdateFailed(float delta)
+  {}
+
+  void Application::ScrollGround(float delta)
+  {
+    for (Entity& ground : m_ground)
+    {
+      ground.m_position.x -= 1.0 * delta;
+
+      if (ground.m_position.x <= -1.72 * 1.75) {
+        ground.m_position.x += 1.72 * 4;
+      }
     }
   }
 
@@ -173,32 +167,20 @@ namespace WallpaperAPI
   {
     ShaderProgram& shader = m_renderer.GetShaderProgram();
 
-    GL_CHECK(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+    GL_CHECK(glClearColor(0.2f, 0.3f, 0.9f, 1.0f));
     GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
     shader.Use();
-    for (Entity& entity : m_entities)
+    m_renderer.RenderEntity(m_player);
+    for (Entity& entity : m_ground)
     {
-      glm::mat4 transform = glm::mat4(1.0f);
-      transform = glm::translate(transform, entity.m_position);
-      transform = glm::scale(transform, entity.m_scale);
-      // transform = glm::rotate(transform, (float) glm::radians(m_rot), glm::vec3(0, 0, 1));
-
-      shader.LoadMatrix4f("transform", glm::value_ptr(transform));
-
-      // glm::vec3 out = glm::unProject(glm::vec3(0, 0, 0), transform * m_renderer.m_view, m_renderer.m_projection, glm::vec4(0, 0, 1920, 1080));
-      // std::cout << "Out: " << out.x << ", " << out.y << ", " << out.z << std::endl;
-
-      GL_CHECK(glActiveTexture(GL_TEXTURE0));
-      GL_CHECK(glBindTexture(GL_TEXTURE_2D, entity.m_texture.textureId));
-
-      GL_CHECK(glBindVertexArray(entity.m_VAO));
-
-      GL_CHECK(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+      m_renderer.RenderEntity(entity);
     }
 
-    m_renderer.RenderLine(m_line, glm::vec3(-1.22, -0.2, 0)); // It's center based?
-    m_renderer.RenderLine(m_line, glm::vec3(0));
+    // m_renderer.RenderLine(m_line, glm::vec3(-1.22, -0.2, 0)); // It's center based?
+    // m_renderer.RenderLine(m_line, glm::vec3(0));
+
+    // m_renderer.RenderLine(m_line, glm::vec3(0, -1.0, 0));
 
     m_renderer.SwapBuffers();
   }

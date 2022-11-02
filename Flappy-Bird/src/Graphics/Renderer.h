@@ -1,6 +1,7 @@
 #pragma once
 #include "ShaderProgram.h"
 #include "../Entity/Line.h"
+#include "../Entity/Entity.h"
 
 namespace WallpaperAPI
 {
@@ -13,7 +14,8 @@ namespace WallpaperAPI
     void CreateOpenGLContext();
     void Init();
 
-    void Renderer::RenderLine(Line& line, glm::vec3 position);
+    void RenderEntity(Entity& entity);
+    void RenderLine(Line& line, glm::vec3 position);
 
     void SwapBuffers();
     void SetViewport(RECT& rect);
