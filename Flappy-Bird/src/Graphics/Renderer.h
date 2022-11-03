@@ -14,6 +14,8 @@ namespace WallpaperAPI
     void CreateOpenGLContext();
     void Init();
 
+    void MakeContextCurrent();
+
     void RenderEntity(Entity& entity);
     void RenderLine(Line& line, glm::vec3 position);
 
