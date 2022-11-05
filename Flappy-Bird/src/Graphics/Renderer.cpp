@@ -36,7 +36,7 @@ namespace WallpaperAPI
     SetPixelFormat(m_windowDeviceContext, letWindowsChooseThisPixelFormat, &pfd);
 
     m_openGLRenderingContext = wglCreateContext(m_windowDeviceContext);
-    wglMakeCurrent(m_windowDeviceContext, m_openGLRenderingContext);
+    MakeContextCurrent();
   }
 
   void Renderer::Init()
@@ -78,6 +78,11 @@ namespace WallpaperAPI
     std::cout << "Out: " << out.x * out.w << ", " << out.y * out.w << ", " << out.z * out.w << ", " << out.w << std::endl;
 
     m_shader.Use();
+  }
+
+  void Renderer::MakeContextCurrent()
+  {
+    wglMakeCurrent(m_windowDeviceContext, m_openGLRenderingContext);
   }
 
   Renderer::~Renderer()

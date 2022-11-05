@@ -10,15 +10,18 @@ workspace "Wallpaper-Games"
   }
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-OPENCV_DIR = os.getenv("OPENCV_DIR")
 
 -- Include directories relative to root folder (solution directory)
 IncludeDir = {}
+IncludeDir["GLFW"] = "%{wks.location}/Flappy-Bird/vendor/GLFW/include"
 IncludeDir["Glad"] = "%{wks.location}/Flappy-Bird/vendor/Glad/include"
 IncludeDir["glm"] = "%{wks.location}/Flappy-Bird/vendor/glm"
+IncludeDir["ImGui"] = "%{wks.location}/Flappy-Bird/vendor/imgui"
 
 group "Dependencies"
+  include "Flappy-Bird/vendor/GLFW"
   include "Flappy-Bird/vendor/Glad"
+  include "Flappy-Bird/vendor/imgui"
 group ""
 
 project "Flappy-Bird"
@@ -48,16 +51,18 @@ project "Flappy-Bird"
   includedirs
   {
     "%{prj.name}/src",
+    "%{IncludeDir.GLFW}",
     "%{IncludeDir.Glad}",
     "%{IncludeDir.glm}",
-    "%{OPENCV_DIR}/include/"
+    "%{IncludeDir.ImGui}"
   }
 
   links
   {
+    "GLFW",
     "Glad",
     "opengl32.lib",
-    "%{OPENCV_DIR}/x64/vc15/lib/*"
+    "ImGui"
   }
 
   filter "system:windows"

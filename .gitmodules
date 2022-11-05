@@ -1,3 +1,9 @@
 [submodule "Flappy-Bird/vendor/glm"]
 	path = Flappy-Bird/vendor/glm
 	url = https://github.com/g-truc/glm
+[submodule "Flappy-Bird/vendor/glfw"]
+	path = Flappy-Bird/vendor/glfw
+	url = https://github.com/Maki325/glfw
+[submodule "Flappy-Bird/vendor/imgui"]
+	path = Flappy-Bird/vendor/imgui
+	url = https://github.com/Maki325/imgui.git
