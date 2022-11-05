@@ -46,7 +46,14 @@ namespace WallpaperAPI
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplWin32_NewFrame();
+
+    ImGuiIO& io = ImGui::GetIO();
+    POINT p = { 0, 0 };
+    GetCursorPos(&p);
+    io.MousePos = ImVec2((float)p.x, (float)p.y);
+
     ImGui::NewFrame();
+    WallpaperAPI::ImGuiBackend::Update();
   }
 
   void ImGuiLayer::End()

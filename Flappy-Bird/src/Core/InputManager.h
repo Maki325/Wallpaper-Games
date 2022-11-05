@@ -141,7 +141,7 @@ namespace WallpaperAPI
       RightSuper = VK_RWIN,
       Menu = VK_MENU,
 
-      Last = Menu,
+      Last = 348,
     };
 
     enum MouseButton

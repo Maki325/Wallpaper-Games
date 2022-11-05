@@ -71,6 +71,7 @@ namespace WallpaperAPI
         it++;
       }
 
+      bool shutdown = false;
       m_imGuiLayer.Begin();
       {
         for (Layer* layer : m_layers)
@@ -80,10 +81,7 @@ namespace WallpaperAPI
         ImGui::Begin("Flappy Bird");
         ImGui::Text("FPS: %.3f", frames / ((current - lastFrameTime).count() / 1000.0));
 
-        if (ImGui::Button("Shut down!"))
-        {
-          break;
-        }
+        shutdown = ImGui::Button("Shut down!");
         ImGui::End();
       }
       m_imGuiLayer.End();
@@ -99,6 +97,11 @@ namespace WallpaperAPI
       }
 
       previous = current;
+      if (shutdown)
+      {
+        std::cout << "Shutdown" << std::endl;
+        break;
+      }
     }
 
     m_imGuiLayer.OnDetach();

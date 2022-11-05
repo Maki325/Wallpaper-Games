@@ -7,33 +7,13 @@
 #include "imgui_impl_opengl3.h"
 #include "Core/ImGuiBackend.h"
 
-extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
-// LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-  std::cout << "Something?" << std::endl;
-  if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
-    return true;
-
-  switch (msg)
-  {
-  case WM_SIZE:
-    if (wParam != SIZE_MINIMIZED)
-    {
-    }
-    return 0;
-  case WM_SYSCOMMAND:
-    if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
-      return 0;
-    break;
-  case WM_DESTROY:
-    PostQuitMessage(0);
-    return 0;
-  }
-  return DefWindowProc(hWnd, msg, wParam, lParam);
-}
-
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow) {
   WallpaperAPI::Utils::InitConsole();
+
+  WallpaperAPI::Application app;
+  app.Run();
+
+  return 0;
 
   /*WNDCLASS wc = {0};
   wc.lpfnWndProc = WndProc;
@@ -45,15 +25,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     return 1;*/
 
   HWND g_hwnd = WallpaperAPI::Utils::GetWallpaperWindow();
-
-  HWND progman = FindWindow(L"ProgMan", NULL);
-  LONG_PTR oldPtr = SetWindowLongPtr(progman, GWLP_WNDPROC, (LONG_PTR)&WndProc);
-
-  std::cout << "oldPtr: " << oldPtr << std::endl;
-  oldPtr = SetWindowLongPtr(progman, GWLP_WNDPROC, (LONG_PTR)&WndProc);
-  std::cout << "oldPtr: " << oldPtr << std::endl;
-
-  // SetWindowSubclass(progman, WndProc, 145646584, 0);
 
   HDC m_desktopDC = GetDC(g_hwnd);
 
@@ -132,11 +103,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
-
     POINT p = { 0, 0 };
     GetCursorPos(&p);
     io.MousePos = ImVec2((float)p.x, (float)p.y);
+    ImGui::NewFrame();
 
     WallpaperAPI::ImGuiBackend::Update();
 
