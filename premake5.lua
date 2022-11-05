@@ -62,6 +62,7 @@ project "Flappy-Bird"
     "GLFW",
     "Glad",
     "opengl32.lib",
+    "comctl32.lib",
     "ImGui"
   }
 

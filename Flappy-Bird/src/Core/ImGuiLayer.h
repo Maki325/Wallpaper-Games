@@ -7,7 +7,7 @@ namespace WallpaperAPI
   class ImGuiLayer : public Layer
   {
   public:
-    ImGuiLayer();
+    ImGuiLayer(HWND hwnd);
 
     void OnAttach() override;
     void OnDetach() override;
@@ -20,7 +20,7 @@ namespace WallpaperAPI
     void End();
 
   private:
-    GLFWwindow* m_window = nullptr;
+    HWND m_hwnd;
     bool m_show_demo_window = true;
   };
 }

@@ -1,5 +1,13 @@
 #include "pch.h"
 #include "Utils.h"
+#include <CommCtrl.h>
+
+// LRESULT WINAPI WndProc22(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT WINAPI WndProc23(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+  std::cout << "T" << std::endl;
+  return 0;
+}
 
 namespace WallpaperAPI
 {
@@ -12,6 +20,7 @@ namespace WallpaperAPI
       if (p)
       {
         // Gets the WorkerW Window after the current one.
+        // SetWindowSubclass(hwnd, WndProc23, 14564654, 0);
         *ret = FindWindowEx(NULL, hwnd, L"WorkerW", NULL);
       }
       return true;
@@ -29,6 +38,7 @@ namespace WallpaperAPI
       // If we found that window, we take its next sibling and assign it to workerw.
       HWND wallpaper_hwnd = nullptr;
       EnumWindows(EnumWindowsProc, (LPARAM)&wallpaper_hwnd);
+      // SetWindowLongPtr(wallpaper_hwnd, GWLP_WNDPROC, (LONG_PTR)WndProc22);
       // Return the handle you're looking for.
       return wallpaper_hwnd;
     }

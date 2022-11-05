@@ -12,7 +12,8 @@ namespace WallpaperAPI
     m_desktopDC(GetDC(m_desktopHWnd)),
     m_renderer(Renderer(m_desktopHWnd, m_desktopDC)),
     m_monitorManager(MonitorManager(m_desktopHWnd, m_desktopDC)),
-    m_inputManager(m_desktopHWnd)
+    m_inputManager(m_desktopHWnd),
+    m_imGuiLayer(m_desktopHWnd)
   {
     srand(time(nullptr));
 
@@ -78,9 +79,16 @@ namespace WallpaperAPI
         }
         ImGui::Begin("Flappy Bird");
         ImGui::Text("FPS: %.3f", frames / ((current - lastFrameTime).count() / 1000.0));
+
+        if (ImGui::Button("Shut down!"))
+        {
+          break;
+        }
         ImGui::End();
       }
       m_imGuiLayer.End();
+
+      m_renderer.SwapBuffers();
 
       frames++;
       if (current - lastFrameTime > SECOND)
@@ -92,9 +100,6 @@ namespace WallpaperAPI
 
       previous = current;
     }
-
-    std::cout << "\nPress any key to exit...";
-    std::cin.get();
 
     m_imGuiLayer.OnDetach();
     for (Layer* layer : m_layers)

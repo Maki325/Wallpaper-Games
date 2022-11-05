@@ -171,7 +171,5 @@ namespace WallpaperAPI
     {
       renderer.RenderEntity(entity);
     }
-
-    renderer.SwapBuffers();
   }
 }
