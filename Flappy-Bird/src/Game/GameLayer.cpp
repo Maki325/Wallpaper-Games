@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "GameLayer.h"
 #include "Core/Application.h"
+#include "Core/Loader.h"
 #include "Graphics/Renderer.h"
 #include "imgui.h"
 
@@ -27,26 +28,14 @@ namespace WallpaperAPI
   void GameLayer::OnAttach()
   {
     Application::GetApp().GetRenderer().MakeContextCurrent();
-    Model model{
-      {
-        // positions              // texture coords
-        { { 1.0f,  1.0f, 0.0f},   {1.0f, 1.0f} }, // top right
-        { { 1.0f, -1.0f, 0.0f},   {1.0f, 0.0f} }, // bottom right
-        { {-1.0f, -1.0f, 0.0f},   {0.0f, 0.0f} }, // bottom left
-        { {-1.0f,  1.0f, 0.0f},   {0.0f, 1.0f} }, // top left
-      },
-      {  // note that we start from 0!
-        { 0, 1, 3 }, // first Triangle
-        { 1, 2, 3 }  // second Triangle
-      }
-    };
+    Model model = Loader::LoadObj("resources/models/ground.obj");
 
-    m_ground.emplace_back(model, glm::vec3(-1.22, -0.2, 0), glm::vec3(0), glm::vec3(1), glm::vec3(0), "resources/textures/Ground.png");
-    m_ground.emplace_back(model, glm::vec3( 0.50, -0.2, 0), glm::vec3(0), glm::vec3(1), glm::vec3(0), "resources/textures/Ground.png");
-    m_ground.emplace_back(model, glm::vec3( 2.22, -0.2, 0), glm::vec3(0), glm::vec3(1), glm::vec3(0), "resources/textures/Ground.png");
-    m_ground.emplace_back(model, glm::vec3( 3.94, -0.2, 0), glm::vec3(0), glm::vec3(1), glm::vec3(0), "resources/textures/Ground.png");
+    m_ground.emplace_back(model, glm::vec3(-1.22, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/Ground.png");
+    m_ground.emplace_back(model, glm::vec3( 0.50, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/Ground.png");
+    m_ground.emplace_back(model, glm::vec3( 2.22, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/Ground.png");
+    m_ground.emplace_back(model, glm::vec3( 3.94, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/Ground.png");
 
-    m_aabbs.emplace_back(glm::vec2(-1, 0.0), glm::vec2(0.25));
+    m_aabbs.emplace_back(glm::vec2(-1, 0.0), glm::vec2(0.20));
     m_aabbs.emplace_back(glm::vec2(0, -1.0), glm::vec2(10, 0.5));
   }
   

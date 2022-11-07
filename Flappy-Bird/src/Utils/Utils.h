@@ -11,5 +11,7 @@ namespace WallpaperAPI
     RECT& NormalizeRect(RECT& rect);
     void InitConsole();
     std::chrono::milliseconds GetMillis();
+    bool StartsWith(const std::string& string, const std::string& start, size_t beginning = 0);
+    std::vector<std::string> Split(const std::string& str, const std::string& splitter);
   };
 }

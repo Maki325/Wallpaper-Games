@@ -115,5 +115,46 @@ namespace WallpaperAPI
     {
       return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     }
+
+    bool StartsWith(const std::string& string, const std::string& start, size_t beginning = 0)
+    {
+      if (start.length() > string.length()) return false;
+
+      for (size_t i = 0; i < start.length(); i++)
+      {
+        if (string[i + beginning] != start[i]) return false;
+      }
+      return true;
+    }
+
+    std::vector<std::string> Split(const std::string& str, const std::string& splitter)
+    {
+      std::vector<std::string> splits;
+
+      size_t last = 0;
+      for (size_t i = 0; i < str.length(); i++)
+      {
+        if (StartsWith(str, splitter, i))
+        {
+          if (last == 0)
+          {
+            splits.push_back(str.substr(0, i - last));
+          }
+          else
+          {
+            splits.push_back(str.substr(last + 1, i - last - 1));
+          }
+          last = i;
+        }
+      }
+      if (last == 0)
+      {
+        splits.push_back(str);
+      }
+      else {
+        splits.push_back(str.substr(last + 1, str.size()));
+      }
+      return splits;
+    }
   }
 }

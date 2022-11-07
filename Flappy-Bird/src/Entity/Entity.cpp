@@ -133,7 +133,7 @@ namespace WallpaperAPI
       ", \"y\": " << v.position.y <<
       ", \"z\": " << v.position.z <<
       "}, \"texture\": {\"x\": " << v.texture.x <<
-      ", \"y\": " << v.texture.y << "}";
+      ", \"y\": " << v.texture.y << "}}";
 
     return out;
   }
@@ -150,7 +150,7 @@ namespace WallpaperAPI
     out << "], \"indices\": [";
     for (size_t i = 0; i < model.indices.size(); i++) {
       glm::uvec3& index = model.indices.at(i);
-      out << "v: {\"x\": " << index.x << ", \"y\": " << index.y << ", \"z\": " << index.z << "}";
+      out << "{\"x\": " << index.x << ", \"y\": " << index.y << ", \"z\": " << index.z << "}";
       if (i != model.indices.size() - 1) {
         out << ",";
       }
