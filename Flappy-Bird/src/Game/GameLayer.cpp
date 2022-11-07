@@ -54,11 +54,6 @@ namespace WallpaperAPI
   {
   }
 
-  bool GameLayer::ShouldDetach()
-  {
-    return false;
-  }
-
   void GameLayer::OnUpdate(float delta)
   {
     Application::GetApp().GetRenderer().MakeContextCurrent();
@@ -146,10 +141,10 @@ namespace WallpaperAPI
   {
     for (Entity& ground : m_ground)
     {
-      ground.m_position.x -= 1.0 * delta;
+      ground.m_position.x -= 1.0f * delta;
 
-      if (ground.m_position.x <= -1.72 * 1.75) {
-        ground.m_position.x += 1.72 * 4;
+      if (ground.m_position.x <= -1.72f * 1.75f) {
+        ground.m_position.x += 1.72f * 4;
       }
     }
   }
@@ -160,8 +155,6 @@ namespace WallpaperAPI
     Renderer& renderer = app.GetRenderer();
     ShaderProgram& shader = renderer.GetShaderProgram();
 
-    renderer.SetViewport(app.GetMonitorManager().GetMonitors().at(0).area);
-
     GL_CHECK(glClearColor(0.2f, 0.3f, 0.9f, 1.0f));
     GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
@@ -171,7 +164,5 @@ namespace WallpaperAPI
     {
       renderer.RenderEntity(entity);
     }
-
-    renderer.SwapBuffers();
   }
 }

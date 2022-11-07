@@ -10,6 +10,7 @@
 #include "AABB.h"
 #include "MonitorManager.h"
 #include "InputManager.h"
+#include "Layers/ImGuiLayer.h"
 
 namespace WallpaperAPI
 {
@@ -30,6 +31,7 @@ namespace WallpaperAPI
     void ResetWallpaper();
   private:
     bool m_running = true;
+    size_t lastFPS = 0;
 
     HWND m_desktopHWnd;
     HDC m_desktopDC;
@@ -38,7 +40,7 @@ namespace WallpaperAPI
     InputManager m_inputManager;
 
     std::vector<Layer*> m_layers;
-    ImGuiLayer m_imGuiLayer;
+    ImGuiLayer *m_imGuiLayer;
     static Application* s_app;
   };
 }

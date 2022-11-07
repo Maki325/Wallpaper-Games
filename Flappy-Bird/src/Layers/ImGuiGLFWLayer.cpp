@@ -1,24 +1,25 @@
 #include "pch.h"
-#include "ImGuiLayer.h"
+#include "ImGuiGLFWLayer.h"
 #include <imgui.h>
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+#include "Core/Application.h"
 
 namespace WallpaperAPI
 {
   void GLFWMessageCallback(int code, const char* message)
   {
-    std::cout << "Code: " << code << ", Message: " << message << std::endl;
+    std::cout << "GLFW Message: (" << code << ") " << message << std::endl;
 
     std::cin.get();
   }
 
-  ImGuiLayer::ImGuiLayer()
-    : Layer("ImGuiLayer")
+  ImGuiGLFWLayer::ImGuiGLFWLayer()
+    : ImGuiLayer("ImGuiGLFWLayer")
   {
   }
 
-  void ImGuiLayer::OnAttach()
+  void ImGuiGLFWLayer::OnAttach()
   {
     glfwSetErrorCallback(GLFWMessageCallback);
 
@@ -30,7 +31,7 @@ namespace WallpaperAPI
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
 
-    m_window = glfwCreateWindow(640, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
+    m_window = glfwCreateWindow(640, 720, "Dear ImGui GLFW", NULL, NULL);
     if (m_window == NULL)
       throw std::runtime_error("Couldn't create GLFW window for ImGui!");
 
@@ -41,16 +42,13 @@ namespace WallpaperAPI
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
-
 
     ImGui_ImplGlfw_InitForOpenGL(m_window, true);
     ImGui_ImplOpenGL3_Init("#version 410");
   }
 
-  void ImGuiLayer::OnDetach()
+  void ImGuiGLFWLayer::OnDetach()
   {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
@@ -60,25 +58,18 @@ namespace WallpaperAPI
     glfwTerminate();
   }
 
-  bool ImGuiLayer::ShouldDetach()
-  {
-    return glfwWindowShouldClose(m_window);
-  }
-
-  void ImGuiLayer::Begin()
+  void ImGuiGLFWLayer::Begin()
   {
     glfwMakeContextCurrent(m_window);
     glfwPollEvents();
 
-    // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
   }
 
-  void ImGuiLayer::End()
+  void ImGuiGLFWLayer::End()
   {
-    // Rendering
     ImGui::Render();
     int display_w, display_h;
     glfwGetFramebufferSize(m_window, &display_w, &display_h);
@@ -88,13 +79,8 @@ namespace WallpaperAPI
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwSwapBuffers(m_window);
-  }
 
-  void ImGuiLayer::OnUpdate(float delta)
-  {
-  }
-  void ImGuiLayer::OnImGuiRender()
-  {
+    Application::GetApp().GetRenderer().MakeContextCurrent();
   }
 
 }

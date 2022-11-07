@@ -1,6 +1,5 @@
 #pragma once
 #include "Core/Layer.h"
-#include "Core/ImGuiLayer.h"
 #include "Entity/Entity.h"
 #include "Entity/Line.h"
 #include "Core/AABB.h"
@@ -21,7 +20,6 @@ namespace WallpaperAPI
 
     void OnAttach() override;
     void OnDetach() override;
-    bool ShouldDetach() override;
 
     void OnUpdate(float delta) override;
     void OnImGuiRender() override;

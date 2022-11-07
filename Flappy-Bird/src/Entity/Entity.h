@@ -49,6 +49,9 @@ namespace WallpaperAPI
     unsigned int m_VBO = 0, m_VAO = 0, m_EBO = 0;
 
     Texture m_texture;
+
+  private:
+    void Clean();
   };
 
 }
