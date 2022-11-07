@@ -1,49 +1,40 @@
-#include "pch.h"
-#include "ImGuiLayer.h"
-#include "Application.h"
+#include <pch.h>
+#include "ImGuiDesktopLayer.h"
 #include <imgui.h>
+#include <imgui_impl_win32.h>
+#include <imgui_impl_opengl3.h>
 #include "ImGuiBackend.h"
-#include "imgui_impl_win32.h"
-#include "imgui_impl_opengl3.h"
 
 namespace WallpaperAPI
 {
-  ImGuiLayer::ImGuiLayer(HWND hwnd)
-    : Layer("ImGuiLayer"), m_hwnd(hwnd)
+  ImGuiDesktopLayer::ImGuiDesktopLayer(HWND hwnd)
+    : ImGuiLayer("ImGuiLayer"), m_hwnd(hwnd)
   {
   }
 
-  void ImGuiLayer::OnAttach()
+  void ImGuiDesktopLayer::OnAttach()
   {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
 
     ImGui_ImplWin32_Init(m_hwnd);
     ImGui_ImplOpenGL3_Init("#version 410");
   }
 
-  void ImGuiLayer::OnDetach()
+  void ImGuiDesktopLayer::OnDetach()
   {
     ImGui_ImplOpenGL3_Shutdown();
-    ImGui::DestroyContext();
     ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
   }
 
-  bool ImGuiLayer::ShouldDetach()
+  void ImGuiDesktopLayer::Begin()
   {
-    return false;
-  }
-
-  void ImGuiLayer::Begin()
-  {
-    ImGuiBackend::Update();
     GL_CHECK(glDisable(GL_DEPTH_TEST));
-    // Start the Dear ImGui frame
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplWin32_NewFrame();
 
@@ -52,23 +43,17 @@ namespace WallpaperAPI
     GetCursorPos(&p);
     io.MousePos = ImVec2((float)p.x, (float)p.y);
 
+    ImGuiBackend::Update();
+
     ImGui::NewFrame();
-    WallpaperAPI::ImGuiBackend::Update();
   }
 
-  void ImGuiLayer::End()
+  void ImGuiDesktopLayer::End()
   {
-    // Rendering
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    GL_CHECK(glEnable(GL_DEPTH_TEST));
-  }
 
-  void ImGuiLayer::OnUpdate(float delta)
-  {
-  }
-  void ImGuiLayer::OnImGuiRender()
-  {
+    GL_CHECK(glEnable(GL_DEPTH_TEST));
   }
 
 }

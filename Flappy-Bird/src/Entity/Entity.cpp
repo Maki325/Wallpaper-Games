@@ -65,6 +65,11 @@ namespace WallpaperAPI
 
   Entity::~Entity()
   {
+    Clean();
+  }
+
+  void Entity::Clean()
+  {
     GL_CHECK(glDeleteVertexArrays(1, &m_VAO));
     GL_CHECK(glDeleteBuffers(1, &m_VBO));
     GL_CHECK(glDeleteBuffers(1, &m_EBO));
@@ -109,8 +114,6 @@ namespace WallpaperAPI
     // load image, create texture and generate mipmaps
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
     unsigned char* data = stbi_load(m_texture.location, &m_texture.width, &m_texture.height, &m_texture.colorChannels, STBI_rgb_alpha);
-
-    std::cout << "data: " << (void *) data << std::endl;
 
     if (data)
     {

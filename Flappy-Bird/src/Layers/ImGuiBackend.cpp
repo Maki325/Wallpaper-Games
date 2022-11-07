@@ -1,39 +1,7 @@
 #include "pch.h"
 #include "ImGuiBackend.h"
-#include "imgui.h"
-#include "imgui_impl_win32.h"
-#include "Application.h"
-
-#ifndef IMGUI_IMPL_WIN32_DISABLE_GAMEPAD
-#include <xinput.h>
-typedef DWORD(WINAPI* PFN_XInputGetCapabilities)(DWORD, DWORD, XINPUT_CAPABILITIES*);
-typedef DWORD(WINAPI* PFN_XInputGetState)(DWORD, XINPUT_STATE*);
-#endif
-
-struct ImGui_ImplWin32_Data
-{
-  HWND                        hWnd;
-  HWND                        MouseHwnd;
-  bool                        MouseTracked;
-  INT64                       Time;
-  INT64                       TicksPerSecond;
-  ImGuiMouseCursor            LastMouseCursor;
-  bool                        HasGamepad;
-  bool                        WantUpdateHasGamepad;
-
-#ifndef IMGUI_IMPL_WIN32_DISABLE_GAMEPAD
-  HMODULE                     XInputDLL;
-  PFN_XInputGetCapabilities   XInputGetCapabilities;
-  PFN_XInputGetState          XInputGetState;
-#endif
-
-  ImGui_ImplWin32_Data() { memset(this, 0, sizeof(*this)); }
-};
-
-static ImGui_ImplWin32_Data* ImGui_ImplWin32_GetBackendData_Custom()
-{
-  return ImGui::GetCurrentContext() ? (ImGui_ImplWin32_Data*)ImGui::GetIO().BackendPlatformUserData : NULL;
-}
+#include <imgui.h>
+#include "Core/Application.h"
 
 namespace WallpaperAPI
 {
@@ -45,8 +13,6 @@ namespace WallpaperAPI
         return;
 
       ImGuiIO& io = ImGui::GetIO();
-      ImGui_ImplWin32_Data* bd = ImGui_ImplWin32_GetBackendData_Custom();
-
       InputManager& im = Application::GetApp().GetInputManager();
 
       for (size_t i = Input::MouseButton::Button0; i < Input::MouseButton::Button4; i++)
@@ -54,7 +20,7 @@ namespace WallpaperAPI
         io.MouseDown[i] = im.IsMouseButtonDown((Input::MouseButton) i);
       }
 
-      for (size_t i = Input::Key::Space; i < Input::Key::Last; i++)
+      for (size_t i = 0; i < Input::Key::Last; i++)
       {
         if (i == VK_CONTROL)
         {
@@ -78,10 +44,26 @@ namespace WallpaperAPI
           continue;
         }
 
+        bool last = io.KeysDown[i];
         io.KeysDown[i] = im.IsKeyDown((Input::Key) i);
-        if (io.KeysDown[i])
+
+        if (!last && io.KeysDown[i])
         {
-          io.AddInputCharacterUTF16((unsigned short) i);
+          size_t key = i;
+          if (key >= Input::Key::KP0 && key <= Input::Key::KP9)
+          {
+            key = i - Input::Key::KP0 + Input::Key::D0;
+          }
+          else if (key == Input::Key::KPSubtract)
+          {
+            key = Input::Key::Minus;
+          }
+          else if (key == Input::Key::KPDecimal || key == VK_OEM_PERIOD)
+          {
+            key = Input::Key::Period;
+          }
+
+          io.AddInputCharacterUTF16((unsigned short) key);
         }
       }
     }

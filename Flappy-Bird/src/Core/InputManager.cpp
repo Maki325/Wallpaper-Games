@@ -60,15 +60,6 @@ namespace WallpaperAPI
     m_mouseButtons[button] = action;
   }
 
-  void InputManager::HandleCursorPosition(double xpos, double ypos)
-  {
-    if (m_mousePosition.x == xpos && m_mousePosition.y == ypos)
-      return;
-
-    m_mousePosition.x = xpos;
-    m_mousePosition.y = ypos;
-  }
-
   void InputManager::InitKeys()
   {
     memset(m_keycodes, -1, sizeof(m_keycodes));

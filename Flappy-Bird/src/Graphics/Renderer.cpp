@@ -67,16 +67,6 @@ namespace WallpaperAPI
     m_lineShader.LoadMatrix4f("projection", glm::value_ptr(m_projection));
     m_lineShader.LoadMatrix4f("view", glm::value_ptr(m_view));
 
-    glm::mat4 inverse = glm::mat4(0);
-    inverse = m_projection * m_view;
-    inverse = glm::inverse(inverse);
-
-    glm::vec4 in = glm::vec4(0.1, 0.1, 0, 1);
-    glm::vec4 out = inverse * in;
-
-    std::cout << "Out: " << out.x << ", " << out.y << ", " << out.z << ", " << out.w << std::endl;
-    std::cout << "Out: " << out.x * out.w << ", " << out.y * out.w << ", " << out.z * out.w << ", " << out.w << std::endl;
-
     m_shader.Use();
   }
 
@@ -95,7 +85,6 @@ namespace WallpaperAPI
     glm::mat4 transform = glm::mat4(1.0f);
     transform = glm::translate(transform, entity.m_position);
     transform = glm::scale(transform, entity.m_scale);
-    // transform = glm::rotate(transform, (float) glm::radians(m_rot), glm::vec3(0, 0, 1));
 
     m_shader.LoadMatrix4f("transform", glm::value_ptr(transform));
 
@@ -154,6 +143,8 @@ namespace WallpaperAPI
 
     m_shader.Use();
     m_shader.LoadMatrix4f("projection", glm::value_ptr(m_projection));
+    m_lineShader.Use();
+    m_lineShader.LoadMatrix4f("projection", glm::value_ptr(m_projection));
   }
 
   void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)

@@ -184,7 +184,6 @@ namespace WallpaperAPI
 
     void HandleKeyAction(int key, int scancode, Input::Action action);
     void HandleMouseAction(int button, Input::Action action);
-    void HandleCursorPosition(double xpos, double ypos);
 
     short int m_keycodes[512];
     short int m_scancodes[Input::Key::Last + 1];
@@ -192,7 +191,6 @@ namespace WallpaperAPI
 
     Input::Action m_keys[Input::Key::Last + 1];
     Input::Action m_mouseButtons[Input::MouseButton::ButtonLast + 1];
-    glm::vec2 m_mousePosition;
   private:
     HWND m_hWnd;
   };

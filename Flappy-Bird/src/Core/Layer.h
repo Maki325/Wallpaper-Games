@@ -9,7 +9,6 @@ namespace WallpaperAPI
 
     virtual void OnAttach() = 0;
     virtual void OnDetach() = 0;
-    virtual bool ShouldDetach() { return false; }
 
     virtual void OnUpdate(float delta) = 0;
 

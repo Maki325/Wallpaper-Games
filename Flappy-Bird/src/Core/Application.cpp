@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "Application.h"
 #include "Entity/Entity.h"
-#include "ImGuiLayer.h"
+#include "Layers/ImGuiGLFWLayer.h"
+#include "Layers/ImGuiDesktopLayer.h"
 #include "imgui.h"
 
 namespace WallpaperAPI
@@ -13,9 +14,10 @@ namespace WallpaperAPI
     m_renderer(Renderer(m_desktopHWnd, m_desktopDC)),
     m_monitorManager(MonitorManager(m_desktopHWnd, m_desktopDC)),
     m_inputManager(m_desktopHWnd),
-    m_imGuiLayer(m_desktopHWnd)
+    m_imGuiLayer(new ImGuiDesktopLayer(m_desktopHWnd))
+    // m_imGuiLayer(new ImGuiGLFWLayer())
   {
-    srand(time(nullptr));
+    srand((unsigned int) time(nullptr));
 
     m_layers.push_back(new GameLayer());
 
@@ -27,14 +29,14 @@ namespace WallpaperAPI
   void Application::Run()
   {
     if (!m_renderer.IsInitialized()) {
-      std::cout << "Failed to initialize OpenGL context" << std::endl;
+      INFO("Failed to initialize OpenGL context");
       std::cin.get();
       return;
     }
-    std::cout << "Successfully initialized OpenGL context" << std::endl;
+    INFO("Successfully initialized OpenGL context");
 
     if (m_monitorManager.GetMonitors().empty()) {
-      std::cout << "No monitor available!" << std::endl;
+      INFO("No monitor available!");
       std::cin.get();
       return;
     }
@@ -45,67 +47,56 @@ namespace WallpaperAPI
     std::chrono::milliseconds previous = Utils::GetMillis();
     std::chrono::milliseconds lastFrameTime = previous;
     size_t frames = 0;
-    std::chrono::milliseconds lag(0);
-    const std::chrono::milliseconds MS_PER_UPDATE(16);
     const std::chrono::milliseconds SECOND(1000);
 
-    m_imGuiLayer.OnAttach();
+    m_imGuiLayer->OnAttach();
     for (Layer* layer : m_layers)
     {
       layer->OnAttach();
     }
 
-    while (true)
+    while (m_running)
     {
       std::chrono::milliseconds current = Utils::GetMillis();
       std::chrono::milliseconds elapsed = current - previous;
 
-      for (auto it = m_layers.begin();it != m_layers.end();)
+      for (auto layer : m_layers)
       {
-        if ((*it)->ShouldDetach())
-        {
-          it = m_layers.erase(it);
-          continue;
-        }
-        (*it)->OnUpdate(elapsed.count() / 1000.0);
-        it++;
+        layer->OnUpdate(elapsed.count() / 1000.0f);
       }
 
-      bool shutdown = false;
-      m_imGuiLayer.Begin();
+      m_imGuiLayer->Begin();
       {
-        for (Layer* layer : m_layers)
+        for (auto layer : m_layers)
         {
           layer->OnImGuiRender();
         }
         ImGui::Begin("Flappy Bird");
-        ImGui::Text("FPS: %.3f", frames / ((current - lastFrameTime).count() / 1000.0));
+        ImGui::Text("FPS: %zu (%.3f)", lastFPS, frames / ((current - lastFrameTime).count() / 1000.0));
 
-        shutdown = ImGui::Button("Shut down!");
+        if (ImGui::Button("Shut down!"))
+        {
+          m_running = false;
+        }
         ImGui::End();
       }
-      m_imGuiLayer.End();
+      m_imGuiLayer->End();
 
       m_renderer.SwapBuffers();
 
       frames++;
       if (current - lastFrameTime > SECOND)
       {
-        std::cout << "Frames: " << frames << std::endl;
+        lastFPS = frames;
         frames = 0;
         lastFrameTime = current;
       }
 
       previous = current;
-      if (shutdown)
-      {
-        std::cout << "Shutdown" << std::endl;
-        break;
-      }
     }
 
-    m_imGuiLayer.OnDetach();
-    for (Layer* layer : m_layers)
+    m_imGuiLayer->OnDetach();
+    for (auto layer : m_layers)
     {
       layer->OnDetach();
     }
