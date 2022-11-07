@@ -7,3 +7,4 @@
 [submodule "Flappy-Bird/vendor/imgui"]
 	path = Flappy-Bird/vendor/imgui
 	url = https://github.com/Maki325/imgui.git
+	branch = wallpaper-games
