@@ -9,18 +9,17 @@ namespace WallpaperAPI
 {
   GameLayer::GameLayer()
     : Layer("GameLayer"),
-    m_line(glm::vec3(-1.0f, 0, 0.0), glm::vec3(1.0f, 0, 0.0), glm::vec4(0, 0, 1, 1)),
     m_player({
         {
-        // positions              // texture coords
-        { { 1.0f,  1.0f, 0.0f},   {1.0f, 1.0f} }, // top right
-        { { 1.0f, -1.0f, 0.0f},   {1.0f, 0.0f} }, // bottom right
-        { {-1.0f, -1.0f, 0.0f},   {0.0f, 0.0f} }, // bottom left
-        { {-1.0f,  1.0f, 0.0f},   {0.0f, 1.0f} }, // top left
-      }, {  // note that we start from 0!
-        { 0, 1, 3 }, // first Triangle
-        { 1, 2, 3 }  // second Triangle
-      }
+          // positions              // texture coords
+          { { 1.0f,  1.0f, 0.0f},   {1.0f, 1.0f} }, // top right
+          { { 1.0f, -1.0f, 0.0f},   {1.0f, 0.0f} }, // bottom right
+          { {-1.0f, -1.0f, 0.0f},   {0.0f, 0.0f} }, // bottom left
+          { {-1.0f,  1.0f, 0.0f},   {0.0f, 1.0f} }, // top left
+        }, {  // note that we start from 0!
+          { 0, 1, 3 }, // first Triangle
+          { 1, 2, 3 }  // second Triangle
+        }
       }, glm::vec3(-1, 0, 0), glm::vec3(0), glm::vec3(0.25), glm::vec3(0), "resources/textures/flappy-bird.png")
   {
   }
@@ -35,8 +34,8 @@ namespace WallpaperAPI
     m_ground.emplace_back(model, glm::vec3( 2.22, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/Ground.png");
     m_ground.emplace_back(model, glm::vec3( 3.94, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/Ground.png");
 
-    m_aabbs.emplace_back(glm::vec2(-1, 0.0), glm::vec2(0.20));
-    m_aabbs.emplace_back(glm::vec2(0, -1.0), glm::vec2(10, 0.5));
+    m_aabbs.emplace_back(glm::vec2(-1.0f,  0.0f), glm::vec2(0.14f, 0.10f));
+    m_aabbs.emplace_back(glm::vec2( 0.0f, -1.0f), glm::vec2(10.0f, 0.24f));
   }
   
   void GameLayer::OnDetach()

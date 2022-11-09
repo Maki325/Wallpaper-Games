@@ -1,7 +1,6 @@
 #pragma once
 #include "Core/Layer.h"
 #include "Entity/Entity.h"
-#include "Entity/Line.h"
 #include "Core/AABB.h"
 
 namespace WallpaperAPI
@@ -33,7 +32,6 @@ namespace WallpaperAPI
     void Render();
 
   private:
-    Line m_line;
     Entity m_player;
 
     std::vector<Entity> m_ground;
