@@ -12,12 +12,18 @@ namespace WallpaperAPI
   }
   bool AABB::IsColliding(AABB& one, AABB& two)
   {
-    bool collisionX = one.m_position.x + one.m_size.x / 2 >= two.m_position.x - two.m_size.x / 2 &&
-      two.m_position.x + two.m_size.x / 2 >= one.m_position.x - one.m_size.x / 2;
-    // collision y-axis?
-    bool collisionY = one.m_position.y + one.m_size.y / 2 >= two.m_position.y - two.m_size.y / 2 &&
-      two.m_position.y + two.m_size.y / 2 >= one.m_position.y - one.m_size.y / 2;
-    // collision only if on both axes
-    return collisionX && collisionY;
+    if ((one.Top() < two.Top() && one.Top() > two.Bottom()) || (one.Bottom() < two.Top() && one.Bottom() > two.Bottom()))
+    {
+      if ((one.Left() < two.Right() && one.Left() > two.Left()) || (one.Right() < two.Top() && one.Right() > two.Bottom()))
+      {
+        return true;
+      }
+    }
+    return false;
   }
+
+  float AABB::Top()    { return m_position.y + m_size.y; }
+  float AABB::Bottom() { return m_position.y - m_size.y; }
+  float AABB::Right()  { return m_position.x + m_size.x; }
+  float AABB::Left()   { return m_position.x - m_size.x; }
 }
