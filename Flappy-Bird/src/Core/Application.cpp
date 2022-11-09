@@ -15,7 +15,6 @@ namespace WallpaperAPI
     m_monitorManager(MonitorManager(m_desktopHWnd, m_desktopDC)),
     m_inputManager(m_desktopHWnd),
     m_imGuiLayer(new ImGuiDesktopLayer(m_desktopHWnd))
-    // m_imGuiLayer(new ImGuiGLFWLayer())
   {
     srand((unsigned int) time(nullptr));
 
@@ -74,10 +73,7 @@ namespace WallpaperAPI
         ImGui::Begin("Flappy Bird");
         ImGui::Text("FPS: %zu (%.3f)", lastFPS, frames / ((current - lastFrameTime).count() / 1000.0));
 
-        if (ImGui::Button("Shut down!"))
-        {
-          m_running = false;
-        }
+        if (ImGui::Button("Shut down!")) { m_running = false; }
         ImGui::End();
       }
       m_imGuiLayer->End();

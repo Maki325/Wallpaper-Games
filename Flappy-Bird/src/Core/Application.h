@@ -4,7 +4,6 @@
 #include "Utils/Utils.h"
 #include "Graphics/Renderer.h"
 #include "Entity/Entity.h"
-#include "Entity/Line.h"
 #include "Layer.h"
 #include "Game/GameLayer.h"
 #include "AABB.h"
