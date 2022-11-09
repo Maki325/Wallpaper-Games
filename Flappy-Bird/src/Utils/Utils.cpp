@@ -116,7 +116,7 @@ namespace WallpaperAPI
       return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     }
 
-    bool StartsWith(const std::string& string, const std::string& start, size_t beginning = 0)
+    bool StartsWith(const std::string& string, const std::string& start, size_t beginning)
     {
       if (start.length() > string.length()) return false;
 
