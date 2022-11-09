@@ -22,4 +22,15 @@ namespace WallpaperAPI
 
     GL_CHECK(glBindVertexArray(0));
   }
+
+  Line::~Line()
+  {
+    Destroy();
+  }
+
+  void Line::Destroy()
+  {
+    GL_CHECK(glDeleteVertexArrays(1, &m_VAO));
+    GL_CHECK(glDeleteBuffers(1, &m_VBO));
+  }
 }

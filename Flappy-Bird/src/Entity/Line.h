@@ -6,7 +6,9 @@ namespace WallpaperAPI
   {
   public:
     Line(glm::vec3 start, glm::vec3 end, glm::vec4 color);
-
+    ~Line();
+  private:
+    void Destroy();
   public:
     glm::vec3 m_vertices[2];
     glm::vec4 m_color;
