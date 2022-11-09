@@ -1,7 +1,8 @@
 #pragma once
 #include "ShaderProgram.h"
-#include "../Entity/Line.h"
-#include "../Entity/Entity.h"
+#include "Entity/Line.h"
+#include "Entity/Entity.h"
+#include "Core/AABB.h"
 
 namespace WallpaperAPI
 {
@@ -17,7 +18,8 @@ namespace WallpaperAPI
     void MakeContextCurrent();
 
     void RenderEntity(Entity& entity);
-    void RenderLine(Line& line, glm::vec3 position);
+    void RenderLine(Line& line, glm::vec3 &position = glm::vec3(0));
+    void RenderAABB(AABB& aabb);
 
     void SwapBuffers();
     void SetViewport(RECT& rect);

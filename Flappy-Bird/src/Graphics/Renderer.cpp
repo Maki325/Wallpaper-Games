@@ -98,7 +98,7 @@ namespace WallpaperAPI
     glBindVertexArray(0);
   }
 
-  void Renderer::RenderLine(Line &line, glm::vec3 position)
+  void Renderer::RenderLine(Line &line, glm::vec3 &position)
   {
     GL_CHECK(glDisable(GL_DEPTH_TEST));
     m_lineShader.Use();
@@ -113,6 +113,21 @@ namespace WallpaperAPI
     glDrawArrays(GL_LINES, 0, 2);
     glBindVertexArray(0);
     GL_CHECK(glEnable(GL_DEPTH_TEST));
+  }
+
+  void Renderer::RenderAABB(AABB& aabb)
+  {
+    auto &[position, size] = aabb;
+
+    glm::vec2 topLeft     = glm::vec2(position.x - size.x, position.y + size.y);
+    glm::vec2 topRight    = glm::vec2(position.x + size.x, position.y + size.y);
+    glm::vec2 bottomLeft  = glm::vec2(position.x - size.x, position.y - size.y);
+    glm::vec2 bottomRight = glm::vec2(position.x + size.x, position.y - size.y);
+
+    RenderLine(Line(glm::vec3(topLeft,    0), glm::vec3(topRight,    0), glm::vec4(1, 0, 1, 1)));
+    RenderLine(Line(glm::vec3(topLeft,    0), glm::vec3(bottomLeft,  0), glm::vec4(1, 0, 1, 1)));
+    RenderLine(Line(glm::vec3(topRight,   0), glm::vec3(bottomRight, 0), glm::vec4(1, 0, 1, 1)));
+    RenderLine(Line(glm::vec3(bottomLeft, 0), glm::vec3(bottomRight, 0), glm::vec4(1, 0, 1, 1)));
   }
 
   HWND Renderer::GetHWnd()
