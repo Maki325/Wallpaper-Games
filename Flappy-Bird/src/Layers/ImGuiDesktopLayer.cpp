@@ -8,7 +8,7 @@
 namespace WallpaperAPI
 {
   ImGuiDesktopLayer::ImGuiDesktopLayer(HWND hwnd)
-    : ImGuiLayer("ImGuiLayer"), m_hwnd(hwnd)
+    : ImGuiLayer("ImGuiDesktopLayer"), m_hwnd(hwnd)
   {
   }
 
