@@ -2,7 +2,7 @@
 #include "ShaderProgram.h"
 #include "Entity/Line.h"
 #include "Entity/Entity.h"
-#include "Core/AABB.h"
+#include "Colliders/AABB.h"
 
 namespace WallpaperAPI
 {

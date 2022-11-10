@@ -1,7 +1,9 @@
 #pragma once
 #include "Core/Layer.h"
 #include "Entity/Entity.h"
-#include "Core/AABB.h"
+#include "Colliders/AABB.h"
+#include "Colliders/CircleCollider.h"
+#include "Game/Obstacle.h"
 
 namespace WallpaperAPI
 {
@@ -29,13 +31,18 @@ namespace WallpaperAPI
     void UpdateRunning(float delta);
     void UpdateFailed(float delta);
     void ScrollGround(float delta);
+    float GetHeight();
+    void ScrollPipes(float delta);
     void Render();
 
   private:
+    size_t m_score;
     Entity m_player;
+    Obstacle m_obstacles[11];
 
     std::vector<Entity> m_ground;
-    std::vector<AABB> m_aabbs;
+    AABB m_groundAABB;
+    CircleCollider m_playerCollider;
 
     GameState m_gameState = GameState::INITIALIZED;
   };

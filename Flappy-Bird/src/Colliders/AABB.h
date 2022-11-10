@@ -1,8 +1,9 @@
 #pragma once
+#include "Collider.h"
 
 namespace WallpaperAPI
 {
-  class AABB
+  class AABB : public Collider
   {
   public:
     AABB(glm::vec2 position, glm::vec2 size);
@@ -12,12 +13,8 @@ namespace WallpaperAPI
     float Left();
     float Right();
   public:
-
     glm::vec2 m_position;
     glm::vec2 m_size;
-
-    bool IsColliding(AABB& other);
-    static bool IsColliding(AABB& one, AABB& two);
   };
 }
 

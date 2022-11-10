@@ -64,6 +64,7 @@ namespace WallpaperAPI
         layer->OnUpdate(elapsed.count() / 1000.0f);
       }
 
+#ifndef WG_DIST
       m_imGuiLayer->Begin();
       {
         for (auto layer : m_layers)
@@ -77,6 +78,7 @@ namespace WallpaperAPI
         ImGui::End();
       }
       m_imGuiLayer->End();
+#endif
 
       m_renderer.SwapBuffers();
 

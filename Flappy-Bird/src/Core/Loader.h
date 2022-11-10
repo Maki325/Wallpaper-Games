@@ -2,7 +2,7 @@
 
 namespace WallpaperAPI
 {
-  extern struct Model;
+  struct Model;
 
   namespace Loader
   {

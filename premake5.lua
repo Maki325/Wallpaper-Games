@@ -75,6 +75,7 @@ project "Flappy-Bird"
   filter "configurations:Debug"
     defines
     {
+      "WG_DEBUG"
     }
     runtime "Debug"
     symbols "on"
@@ -82,6 +83,7 @@ project "Flappy-Bird"
   filter "configurations:Release"
     defines
     {
+      "WG_RELEASE"
     }
     runtime "Release"
     optimize "on"
@@ -89,6 +91,7 @@ project "Flappy-Bird"
   filter "configurations:Dist"
     defines
     {
+      "WG_DIST"
     }
     runtime "Release"
     optimize "on"

@@ -3,6 +3,7 @@
 #include "Core/Application.h"
 #include "Core/Loader.h"
 #include "Graphics/Renderer.h"
+#include "Colliders/Collider.h"
 #include "imgui.h"
 
 namespace WallpaperAPI
@@ -10,7 +11,7 @@ namespace WallpaperAPI
   GameLayer::GameLayer()
     : Layer("GameLayer"),
     m_player({
-        {
+          {
           // positions              // texture coords
           { { 1.0f,  1.0f, 0.0f},   {1.0f, 1.0f} }, // top right
           { { 1.0f, -1.0f, 0.0f},   {1.0f, 0.0f} }, // bottom right
@@ -20,7 +21,9 @@ namespace WallpaperAPI
           { 0, 1, 3 }, // first Triangle
           { 1, 2, 3 }  // second Triangle
         }
-      }, glm::vec3(-1, 0, 0), glm::vec3(0), glm::vec3(0.25), glm::vec3(0), "resources/textures/flappy-bird.png")
+      }, glm::vec3(0, 0, 0), glm::vec3(0), glm::vec3(0.25), glm::vec3(0), "resources/textures/flappy-bird.png"),
+    m_groundAABB(glm::vec2(0.0f, -1.0f), glm::vec2(10.0f, 0.24f)),
+    m_playerCollider(glm::vec2(0.0f, 0.0f), 0.10f)
   {
   }
 
@@ -29,13 +32,19 @@ namespace WallpaperAPI
     Application::GetApp().GetRenderer().MakeContextCurrent();
     Model model = Loader::LoadObj("resources/models/ground.obj");
 
-    m_ground.emplace_back(model, glm::vec3(-1.22, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/Ground.png");
-    m_ground.emplace_back(model, glm::vec3( 0.50, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/Ground.png");
-    m_ground.emplace_back(model, glm::vec3( 2.22, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/Ground.png");
-    m_ground.emplace_back(model, glm::vec3( 3.94, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/Ground.png");
+    m_ground.emplace_back(model, glm::vec3(-1.22, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/ground.png");
+    m_ground.emplace_back(model, glm::vec3( 0.50, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/ground.png");
+    m_ground.emplace_back(model, glm::vec3( 2.22, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/ground.png");
+    m_ground.emplace_back(model, glm::vec3( 3.94, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/ground.png");
 
-    m_aabbs.emplace_back(glm::vec2(-1.0f,  0.0f), glm::vec2(0.14f, 0.10f));
-    m_aabbs.emplace_back(glm::vec2( 0.0f, -1.0f), glm::vec2(10.0f, 0.24f));
+    // m_aabbs.emplace_back(glm::vec2(-1.0f,  0.0f), glm::vec2(0.14f, 0.10f));
+    // m_aabbs.emplace_back(glm::vec2( 0.0f, -1.0f), glm::vec2(10.0f, 0.24f));
+
+    int pos = 5;
+    for (auto& obstacle : m_obstacles)
+    {
+      obstacle.SetPosition(glm::vec3(pos++, GetHeight(), 0));
+    }
   }
   
   void GameLayer::OnDetach()
@@ -93,6 +102,7 @@ namespace WallpaperAPI
   void GameLayer::UpdateRunning(float delta)
   {
     ScrollGround(delta);
+    ScrollPipes(delta);
     glm::vec3 GRAVITY(0, -4.0f, 0);
 
     glm::vec3 velocity(GRAVITY);
@@ -112,12 +122,22 @@ namespace WallpaperAPI
       m_player.m_velocity.y = 6.0f;
     }
 
-    AABB& playerAABB = m_aabbs.at(0);
-    playerAABB.m_position.y = m_player.m_position.y;
+    m_playerCollider.m_position.y = m_player.m_position.y;
 
-    if (AABB::IsColliding(playerAABB, m_aabbs.at(1)))
+     if (Collider::IsColliding(m_playerCollider, m_groundAABB))
+     {
+       std::cout << "m_score: " << m_score << std::endl;
+       m_gameState = GameState::FAILED;
+     }
+
+    for (auto& obstacle : m_obstacles)
     {
-      m_gameState = GameState::FAILED;
+      if (obstacle.IsColliding(m_playerCollider))
+      {
+        std::cout << "m_score: " << m_score << std::endl;
+        m_gameState = GameState::FAILED;
+        break;
+      }
     }
   }
 
@@ -137,6 +157,37 @@ namespace WallpaperAPI
     }
   }
 
+  float GameLayer::GetHeight()
+  {
+    return (rand() % 100) / 200.0f;
+  }
+
+  void GameLayer::ScrollPipes(float delta)
+  {
+    for (auto& obstacle : m_obstacles)
+    {
+      auto& position = obstacle.GetPosition();
+
+      bool test = false;
+      if (position.x >= 0)
+      {
+        test = true;
+      }
+      position.x -= 1.0f * delta;
+      if (test && position.x <= 0)
+      {
+        m_score++;
+      }
+
+      if (position.x <= -4) {
+        position.x += 11;
+        position.y = GetHeight();
+      }
+
+      obstacle.SetPosition(position);
+    }
+  }
+
   void GameLayer::Render()
   {
     Application& app = Application::GetApp();
@@ -148,7 +199,12 @@ namespace WallpaperAPI
 
     shader.Use();
     renderer.RenderEntity(m_player);
-    for (Entity& entity : m_ground)
+
+    for (auto& obstacle : m_obstacles)
+    {
+      obstacle.Render(renderer);
+    }
+    for (auto &entity : m_ground)
     {
       renderer.RenderEntity(entity);
     }

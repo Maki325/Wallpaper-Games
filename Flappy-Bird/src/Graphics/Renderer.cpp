@@ -82,9 +82,14 @@ namespace WallpaperAPI
 
   void Renderer::RenderEntity(Entity& entity)
   {
+    m_shader.Use();
     glm::mat4 transform = glm::mat4(1.0f);
     transform = glm::translate(transform, entity.m_position);
     transform = glm::scale(transform, entity.m_scale);
+
+    transform = glm::rotate(transform, glm::radians(entity.m_rotation.x), glm::vec3(1, 0, 0));
+    transform = glm::rotate(transform, glm::radians(entity.m_rotation.y), glm::vec3(0, 1, 0));
+    transform = glm::rotate(transform, glm::radians(entity.m_rotation.z), glm::vec3(0, 0, 1));
 
     m_shader.LoadMatrix4f("transform", glm::value_ptr(transform));
 
