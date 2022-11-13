@@ -36,9 +36,9 @@ namespace WallpaperAPI
     void Render();
 
   private:
-    size_t m_score;
     Entity m_player;
     Obstacle m_obstacles[11];
+    size_t m_score = 0;
 
     std::vector<Entity> m_ground;
     AABB m_groundAABB;

@@ -17,6 +17,10 @@ IncludeDir["GLFW"] = "%{wks.location}/Flappy-Bird/vendor/GLFW/include"
 IncludeDir["Glad"] = "%{wks.location}/Flappy-Bird/vendor/Glad/include"
 IncludeDir["glm"] = "%{wks.location}/Flappy-Bird/vendor/glm"
 IncludeDir["ImGui"] = "%{wks.location}/Flappy-Bird/vendor/imgui"
+IncludeDir["FreeType"] = "%{wks.location}/Flappy-Bird/vendor/freetype/include"
+
+LibDir = { Win = {} }
+LibDir["Win"]["FreeType"] = "%{wks.location}/Flappy-Bird/vendor/freetype/lib/freetype.lib"
 
 group "Dependencies"
   include "Flappy-Bird/vendor/GLFW"
@@ -54,7 +58,8 @@ project "Flappy-Bird"
     "%{IncludeDir.GLFW}",
     "%{IncludeDir.Glad}",
     "%{IncludeDir.glm}",
-    "%{IncludeDir.ImGui}"
+    "%{IncludeDir.ImGui}",
+    "%{IncludeDir.FreeType}"
   }
 
   links
@@ -67,6 +72,11 @@ project "Flappy-Bird"
 
   filter "system:windows"
     systemversion "latest"
+
+    links
+    {
+      "%{LibDir.Win.FreeType}"
+    }
 
     defines
     {
