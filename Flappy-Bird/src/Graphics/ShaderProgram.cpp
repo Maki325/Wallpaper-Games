@@ -91,7 +91,7 @@ namespace WallpaperAPI
     GL_CHECK(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &m_success));
     if (!m_success)
     {
-      glGetShaderInfoLog(shaderId, 512, NULL, m_infoLog);
+      GL_CHECK(glGetShaderInfoLog(shaderId, 512, NULL, m_infoLog));
       std::cout << "ERROR::SHADER::" << type << "::COMPILATION_FAILED\n" << m_infoLog << std::endl;
     }
 

@@ -65,19 +65,19 @@ namespace WallpaperAPI
       }
 
 #ifndef WG_DIST
-      // m_imGuiLayer->Begin();
-      // {
-      //   for (auto layer : m_layers)
-      //   {
-      //     layer->OnImGuiRender();
-      //   }
-      //   ImGui::Begin("Flappy Bird");
-      //   ImGui::Text("FPS: %zu (%.3f)", lastFPS, frames / ((current - lastFrameTime).count() / 1000.0));
+      m_imGuiLayer->Begin();
+      {
+        for (auto layer : m_layers)
+        {
+          layer->OnImGuiRender();
+        }
+        ImGui::Begin("Flappy Bird");
+        ImGui::Text("FPS: %zu (%.3f)", lastFPS, frames / ((current - lastFrameTime).count() / 1000.0));
 
-      //   if (ImGui::Button("Shut down!")) { m_running = false; }
-      //   ImGui::End();
-      // }
-      // m_imGuiLayer->End();
+        if (ImGui::Button("Shut down!")) { m_running = false; }
+        ImGui::End();
+      }
+      m_imGuiLayer->End();
 #endif
 
       m_renderer.SwapBuffers();

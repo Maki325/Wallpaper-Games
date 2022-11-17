@@ -71,6 +71,10 @@ namespace WallpaperAPI
 
   void GameLayer::Update(float delta)
   {
+    if (Application::GetApp().GetInputManager().IsKeyDown(Input::Key::Up))
+    {
+      m_score = 1234567890;
+    }
     switch (m_gameState)
     {
     case GameState::INITIALIZED:
@@ -194,7 +198,6 @@ namespace WallpaperAPI
     GL_CHECK(glClearColor(0.2f, 0.3f, 0.9f, 1.0f));
     GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-    /*shader.Use();
     renderer.RenderEntity(m_player);
 
     for (auto& obstacle : m_obstacles)
@@ -204,8 +207,20 @@ namespace WallpaperAPI
     for (auto &entity : m_ground)
     {
       renderer.RenderEntity(entity);
-    }*/
+    }
 
-    renderer.RenderText("Hello!", 10.0f, 10.0f, 1.0f, glm::vec3(1, 0, 0));
+    std::string score = std::to_string(m_score);
+
+    int textWidth = renderer.GetTextWidth(score, 2.0f);
+    float half = textWidth / 2.0f;
+
+    int textWidth2 = renderer.GetTextWidth(score, 2.2f);
+    float half2 = textWidth2 / 2.0f;
+
+    int width = renderer.GetViewport().z;
+    float widthHalf = width / 2.0f;
+
+    renderer.RenderText(score, widthHalf - half2, 100.0f - 3.0f, 2.2f, glm::vec3(0, 0, 0));
+    renderer.RenderText(score, widthHalf - half, 100.0f, 2.0f, glm::vec3(1, 1, 1));
   }
 }

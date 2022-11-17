@@ -24,10 +24,12 @@ namespace WallpaperAPI
     void RenderAABB(AABB& aabb);
 
     void RenderText(const std::string& text, float x, float y, float scale, glm::vec3 color);
+    int GetTextWidth(const std::string& text, float scale = 1.0f);
 
     void SwapBuffers();
     void SetViewport(RECT& rect);
     void SetViewport(int x, int y, int width, int height);
+    glm::vec4 GetViewport();
 
     HWND GetHWnd();
     bool IsInitialized() { return m_initialized; }
@@ -40,6 +42,7 @@ namespace WallpaperAPI
     glm::mat4 m_view = glm::mat4(1.0f);
 
     glm::mat4 m_textProjection = glm::mat4(1.0f);
+    glm::vec4 m_viewport = glm::vec4(0);
 
   private:
     struct Character {

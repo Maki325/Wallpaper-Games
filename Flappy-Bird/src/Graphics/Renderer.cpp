@@ -83,7 +83,6 @@ namespace WallpaperAPI
     m_textShader.Use();
     m_textShader.LoadMatrix4f("projection", glm::value_ptr(m_textProjection));
 
-
     FT_Library ft;
     if (FT_Init_FreeType(&ft))
     {
@@ -92,17 +91,16 @@ namespace WallpaperAPI
 
     FT_Face face;
     // "resources/fonts/WorkSans-VariableFont_wght.ttf"
-    if (FT_New_Face(ft, "resources/fonts/WorkSans-Bold.ttf", 0, &face))
+    // "resources/fonts/WorkSans-Bold.ttf"
+    if (FT_New_Face(ft, "resources/fonts/arial.ttf", 0, &face))
     {
       throw std::runtime_error("ERROR::FREETYPE: Failed to load font");
     }
 
     FT_Set_Pixel_Sizes(face, 0, 48);
 
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
+    GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1)); // disable byte-alignment restriction
 
-    // unsigned int textureIds[CHARACTER_COUNT];
-    // glGenTextures(CHARACTER_COUNT, textureIds);
     for (unsigned char c = 0; c < CHARACTER_COUNT; c++)
     {
       // load character glyph 
@@ -113,11 +111,10 @@ namespace WallpaperAPI
       }
 
       unsigned int textureId = 0;
-      glGenTextures(1, &textureId);
+      GL_CHECK(glGenTextures(1, &textureId));
 
-      // generate texture
-      glBindTexture(GL_TEXTURE_2D, textureId);
-      glTexImage2D(
+      GL_CHECK(glBindTexture(GL_TEXTURE_2D, textureId));
+      GL_CHECK(glTexImage2D(
         GL_TEXTURE_2D,
         0,
         GL_RED,
@@ -127,12 +124,12 @@ namespace WallpaperAPI
         GL_RED,
         GL_UNSIGNED_BYTE,
         face->glyph->bitmap.buffer
-      );
+      ));
       // set texture options
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+      GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+      GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+      GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
       m_characters[c] = {
           textureId,
@@ -140,22 +137,23 @@ namespace WallpaperAPI
           glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
           (unsigned int) face->glyph->advance.x
       };
-      std::cout << "m_characters[c].textureID: " << m_characters[c].textureID << std::endl;
     }
+
+    GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
     
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
 
-    glGenVertexArrays(1, &m_textVAO);
-    glGenBuffers(1, &m_textVBO);
-    glBindVertexArray(m_textVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, m_textVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 4); // enable byte-alignment restriction
+    GL_CHECK(glGenVertexArrays(1, &m_textVAO));
+    GL_CHECK(glGenBuffers(1, &m_textVBO));
+    GL_CHECK(glBindVertexArray(m_textVAO));
+    GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, m_textVBO));
+    GL_CHECK(glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW));
+    GL_CHECK(glEnableVertexAttribArray(0));
+    GL_CHECK(glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0));
+    GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GL_CHECK(glBindVertexArray(0));
+    GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 4)); // enable byte-alignment restriction
   }
 
   void Renderer::MakeContextCurrent()
@@ -229,52 +227,73 @@ namespace WallpaperAPI
 
   void Renderer::RenderText(const std::string& text, float x, float y, float scale, glm::vec3 color)
   {
+    x += m_viewport.x;
+    x += m_viewport.y;
     m_textShader.Use();
-    GL_CHECK(glEnable(GL_CULL_FACE));
+    GL_CHECK(glDisable(GL_CULL_FACE));
     GL_CHECK(glDisable(GL_DEPTH_TEST));
+    GL_CHECK(glEnable(GL_BLEND));
+    GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
 
     m_textShader.LoadVec3("textColor", color);
     GL_CHECK(glActiveTexture(GL_TEXTURE0));
     GL_CHECK(glBindVertexArray(m_textVAO));
 
-    // iterate through all characters
+    int maxY = 0;
+    for (auto& c : text)
+    {
+      Character& ch = m_characters[c];
+      if (ch.bearing.y > maxY) maxY = ch.bearing.y;
+    }
     for (auto &c : text)
     {
       Character &ch = m_characters[c];
 
       float xpos = x + ch.bearing.x * scale;
-      float ypos = y - (ch.size.y - ch.bearing.y) * scale;
+      float ypos = y + (maxY - ch.bearing.y) * scale;
 
       float w = ch.size.x * scale;
       float h = ch.size.y * scale;
       // update VBO for each character
       float vertices[6][4] = {
-        { xpos,     ypos + h,   0.0f, 0.0f },
-        { xpos,     ypos,       0.0f, 1.0f },
-        { xpos + w, ypos,       1.0f, 1.0f },
-        
-        { xpos,     ypos + h,   0.0f, 0.0f },
-        { xpos + w, ypos,       1.0f, 1.0f },
-        { xpos + w, ypos + h,   1.0f, 0.0f }
+        { xpos,     ypos + h,   0.0f, 1.0f - 0.0f },
+        { xpos,     ypos,       0.0f, 1.0f - 1.0f },
+        { xpos + w, ypos,       1.0f, 1.0f - 1.0f },
+
+        { xpos,     ypos + h,   0.0f, 1.0f - 0.0f },
+        { xpos + w, ypos,       1.0f, 1.0f - 1.0f },
+        { xpos + w, ypos + h,   1.0f, 1.0f - 0.0f }
       };
       // render glyph texture over quad
       GL_CHECK(glBindTexture(GL_TEXTURE_2D, ch.textureID));
       // update content of VBO memory
+
+      GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
       GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, m_textVBO));
       GL_CHECK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
-      GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
       // render quad
       GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, 6));
-      // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
       x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
     }
     GL_CHECK(glBindVertexArray(0));
     GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
-    GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 4));
 
+    GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 4));
+    GL_CHECK(glDisable(GL_BLEND));
     GL_CHECK(glEnable(GL_DEPTH_TEST));
-    GL_CHECK(glDisable(GL_CULL_FACE));
+  }
+
+  int Renderer::GetTextWidth(const std::string& text, float scale)
+  {
+    int x = 0;
+    for (auto& c : text)
+    {
+      x += (m_characters[c].advance >> 6) * scale;
+    }
+    return x;
   }
 
   HWND Renderer::GetHWnd()
@@ -300,6 +319,7 @@ namespace WallpaperAPI
   void Renderer::SetViewport(int x, int y, int width, int height)
   {
     GL_CHECK(glViewport(x, y, width, height));
+    m_viewport = glm::vec4(x, y, width, height);
 
     m_projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.01f, 1000.0f);
 
@@ -308,10 +328,17 @@ namespace WallpaperAPI
     m_lineShader.Use();
     m_lineShader.LoadMatrix4f("projection", glm::value_ptr(m_projection));
 
-    m_textProjection = glm::ortho(x, x + width, y, y + height);
+    float left = x, right = x + width, top = y, bottom = y + height;
+
+    m_textProjection = glm::ortho(left, right, bottom, top);
 
     m_textShader.Use();
     m_textShader.LoadMatrix4f("projection", glm::value_ptr(m_textProjection));
+  }
+
+  glm::vec4 Renderer::GetViewport()
+  {
+    return m_viewport;
   }
 
   void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
