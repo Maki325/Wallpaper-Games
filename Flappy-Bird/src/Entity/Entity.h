@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include "Graphics/Texture.h"
 
 namespace WallpaperAPI
 {
@@ -18,15 +19,6 @@ namespace WallpaperAPI
     friend std::ostream& operator<<(std::ostream& out, Model& robject);
   };
 
-  class Texture
-  {
-  public:
-    Texture(const char *location);
-    const char *location;
-    unsigned int textureId;
-    int width, height, colorChannels;
-  };
-
   class Entity
   {
   public:
@@ -35,7 +27,6 @@ namespace WallpaperAPI
     ~Entity();
 
   public:
-    void GenerateTexture();
     void GenerateData();
 
     Entity& operator= (const Entity& str);

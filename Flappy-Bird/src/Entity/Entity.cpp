@@ -1,19 +1,13 @@
 #include "pch.h"
 #include "Entity.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "../Graphics/stb_image.h"
-
 namespace WallpaperAPI
 {
-  Texture::Texture(const char *location)
-    : textureId(0), width(0), height(0), colorChannels(0), location(location) {}
 
   Entity::Entity(Model model, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 velocity, const char* texture)
     : m_model(model), m_position(position), m_rotation(rotation), m_scale(scale), m_velocity(velocity), m_texture(Texture(texture))
   {
     Entity::GenerateData();
-    Entity::GenerateTexture();
   }
 
   Entity::Entity(Entity& entity)
@@ -27,7 +21,6 @@ namespace WallpaperAPI
     this->m_velocity = entity.m_velocity;
 
     Entity::GenerateData();
-    Entity::GenerateTexture();
   }
 
   Entity& Entity::operator= (const Entity& entity)
@@ -46,7 +39,7 @@ namespace WallpaperAPI
     }
     if (this->m_texture.textureId)
     {
-      GL_CHECK(glDeleteTextures(1, &this->m_texture.textureId));
+      this->m_texture.Clean();
     }
 
     this->m_model.vertices = std::vector(entity.m_model.vertices);
@@ -58,7 +51,7 @@ namespace WallpaperAPI
     this->m_texture.location = entity.m_texture.location;
 
     Entity::GenerateData();
-    Entity::GenerateTexture();
+    this->m_texture.Init();
 
     return *this;
   }
@@ -74,7 +67,7 @@ namespace WallpaperAPI
     GL_CHECK(glDeleteBuffers(1, &m_VBO));
     GL_CHECK(glDeleteBuffers(1, &m_EBO));
 
-    GL_CHECK(glDeleteTextures(1, &m_texture.textureId));
+    m_texture.Clean();
   }
 
   void Entity::GenerateData()
@@ -99,32 +92,6 @@ namespace WallpaperAPI
     GL_CHECK(glEnableVertexAttribArray(1));
 
     GL_CHECK(glBindVertexArray(0));
-  }
-
-  void Entity::GenerateTexture()
-  {
-    GL_CHECK(glGenTextures(1, &m_texture.textureId));
-    GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_texture.textureId));
-    // set the texture wrapping parameters
-    GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));	// set texture wrapping to GL_REPEAT (default wrapping method)
-    GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
-    // set texture filtering parameters
-    GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-    // load image, create texture and generate mipmaps
-    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char* data = stbi_load(m_texture.location, &m_texture.width, &m_texture.height, &m_texture.colorChannels, STBI_rgb_alpha);
-
-    if (data)
-    {
-      GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_texture.width, m_texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
-      GL_CHECK(glGenerateMipmap(GL_TEXTURE_2D));
-    }
-    else
-    {
-      throw std::runtime_error("Failed to load texture");
-    }
-    stbi_image_free(data);
   }
 
   std::ostream& operator<<(std::ostream& out, Vertex& v)
