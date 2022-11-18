@@ -72,16 +72,20 @@ namespace WallpaperAPI
     m_shader.Use();
 
     InitText();
+
+    m_uiShader.Create("resources/shaders/ui/vertex.glsl", "resources/shaders/ui/fragment.glsl");
+    m_uiShader.Use();
+    m_uiShader.LoadMatrix4f("projection", glm::value_ptr(m_orthoProjection));
   }
   
   void Renderer::InitText()
   {
-    m_textProjection = glm::ortho(0.0f, 1920.0f, 0.0f, 1080.0f);
+    m_orthoProjection = glm::ortho(0.0f, 1920.0f, 0.0f, 1080.0f);
 
     m_textShader.Create("resources/shaders/text/vertex.glsl", "resources/shaders/text/fragment.glsl");
 
     m_textShader.Use();
-    m_textShader.LoadMatrix4f("projection", glm::value_ptr(m_textProjection));
+    m_textShader.LoadMatrix4f("projection", glm::value_ptr(m_orthoProjection));
 
     FT_Library ft;
     if (FT_Init_FreeType(&ft))
@@ -97,7 +101,7 @@ namespace WallpaperAPI
       throw std::runtime_error("ERROR::FREETYPE: Failed to load font");
     }
 
-    FT_Set_Pixel_Sizes(face, 0, 48);
+    FT_Set_Pixel_Sizes(face, 0, 128);
 
     GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1)); // disable byte-alignment restriction
 
@@ -225,10 +229,46 @@ namespace WallpaperAPI
     RenderLine(Line(glm::vec3(bottomLeft, 0), glm::vec3(bottomRight, 0), glm::vec4(1, 0, 1, 1)));
   }
 
-  void Renderer::RenderText(const std::string& text, float x, float y, float scale, glm::vec3 color)
+  void Renderer::RenderCharacter(char c, float x, float y, float scale, int maxY) {
+    Character& ch = m_characters[c];
+
+    float xpos = x + ch.bearing.x * scale;
+    float ypos = y + (maxY - ch.bearing.y) * scale;
+
+    float w = ch.size.x * scale;
+    float h = ch.size.y * scale;
+    // update VBO for each character
+    float vertices[6][4] = {
+      { xpos,     ypos + h,   0.0f, 1.0f - 0.0f },
+      { xpos,     ypos,       0.0f, 1.0f - 1.0f },
+      { xpos + w, ypos,       1.0f, 1.0f - 1.0f },
+
+      { xpos,     ypos + h,   0.0f, 1.0f - 0.0f },
+      { xpos + w, ypos,       1.0f, 1.0f - 1.0f },
+      { xpos + w, ypos + h,   1.0f, 1.0f - 0.0f }
+    };
+    // render glyph texture over quad
+    GL_CHECK(glBindTexture(GL_TEXTURE_2D, ch.textureID));
+    // update content of VBO memory
+
+    GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
+    GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, m_textVBO));
+    GL_CHECK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
+
+    // render quad
+    GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, 6));
+  }
+
+  void Renderer::RenderText(const std::string& text, float x, float y, glm::vec3 &color, float scale, bool centered, bool shadow, glm::vec3& shadowColor)
   {
     x += m_viewport.x;
-    x += m_viewport.y;
+    y += m_viewport.y;
+
+    if (centered) {
+      x -= GetTextWidth(text, scale) / 2.0f;
+    }
+
     m_textShader.Use();
     GL_CHECK(glDisable(GL_CULL_FACE));
     GL_CHECK(glDisable(GL_DEPTH_TEST));
@@ -236,7 +276,6 @@ namespace WallpaperAPI
     GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
 
-    m_textShader.LoadVec3("textColor", color);
     GL_CHECK(glActiveTexture(GL_TEXTURE0));
     GL_CHECK(glBindVertexArray(m_textVAO));
 
@@ -246,36 +285,24 @@ namespace WallpaperAPI
       Character& ch = m_characters[c];
       if (ch.bearing.y > maxY) maxY = ch.bearing.y;
     }
+    if (shadow)
+    {
+      float oldX = x;
+      m_textShader.LoadVec3("textColor", shadowColor);
+      for (auto& c : text)
+      {
+        Character& ch = m_characters[c];
+        RenderCharacter(c, x - ch.size.x * 0.05f, y - ch.size.y * 0.05f, scale + 0.20f, maxY);
+        x += (ch.advance >> 6) * (scale + 0.1f); // bitshift by 6 to get value in pixels (2^6 = 64)
+      }
+      x = oldX;
+      scale += 0.1f;
+    }
+    m_textShader.LoadVec3("textColor", color);
     for (auto &c : text)
     {
-      Character &ch = m_characters[c];
-
-      float xpos = x + ch.bearing.x * scale;
-      float ypos = y + (maxY - ch.bearing.y) * scale;
-
-      float w = ch.size.x * scale;
-      float h = ch.size.y * scale;
-      // update VBO for each character
-      float vertices[6][4] = {
-        { xpos,     ypos + h,   0.0f, 1.0f - 0.0f },
-        { xpos,     ypos,       0.0f, 1.0f - 1.0f },
-        { xpos + w, ypos,       1.0f, 1.0f - 1.0f },
-
-        { xpos,     ypos + h,   0.0f, 1.0f - 0.0f },
-        { xpos + w, ypos,       1.0f, 1.0f - 1.0f },
-        { xpos + w, ypos + h,   1.0f, 1.0f - 0.0f }
-      };
-      // render glyph texture over quad
-      GL_CHECK(glBindTexture(GL_TEXTURE_2D, ch.textureID));
-      // update content of VBO memory
-
-      GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-      GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, m_textVBO));
-      GL_CHECK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
-
-      // render quad
-      GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, 6));
+      Character& ch = m_characters[c];
+      RenderCharacter(c, x, y, scale, maxY);
       x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
     }
     GL_CHECK(glBindVertexArray(0));
@@ -294,6 +321,107 @@ namespace WallpaperAPI
       x += (m_characters[c].advance >> 6) * scale;
     }
     return x;
+  }
+
+  void Renderer::RenderColoredQuad(float x, float y, float width, float height, glm::vec4& color)
+  {
+    x += m_viewport.x;
+    y += m_viewport.y;
+
+    m_uiShader.Use();
+    GL_CHECK(glDisable(GL_DEPTH_TEST));
+    GL_CHECK(glEnable(GL_BLEND));
+    GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    GL_CHECK(glBindVertexArray(m_textVAO));
+
+    // update VBO for each character
+    float vertices[6][4] = {
+      { x,         y + height,   -1.0f, -1.0f },
+      { x,         y,            -1.0f, -1.0f },
+      { x + width, y,            -1.0f, -1.0f },
+
+      { x,         y + height,   -1.0f, -1.0f },
+      { x + width, y,            -1.0f, -1.0f },
+      { x + width, y + height,   -1.0f, -1.0f }
+    };
+
+    m_uiShader.LoadVec4("color", color);
+
+    GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, m_textVBO));
+    GL_CHECK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
+    GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
+    // render quad
+    GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, 6));
+
+    GL_CHECK(glBindVertexArray(0));
+    GL_CHECK(glDisable(GL_BLEND));
+    GL_CHECK(glEnable(GL_DEPTH_TEST));
+  }
+
+  void Renderer::RenderTexturedQuad(float x, float y, float width, float height, Texture &texture, int textureX, int textureY, int textureWidth, int textureHeight)
+  {
+    x += m_viewport.x;
+    y += m_viewport.y;
+
+    if (textureWidth == 0) {
+      textureWidth = texture.width;
+    }
+    if (textureHeight == 0) {
+      textureHeight = texture.height;
+    }
+
+    m_uiShader.Use();
+    GL_CHECK(glDisable(GL_DEPTH_TEST));
+    GL_CHECK(glEnable(GL_BLEND));
+    GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    GL_CHECK(glBindVertexArray(m_textVAO));
+
+    GL_CHECK(glActiveTexture(GL_TEXTURE0));
+    GL_CHECK(glBindTexture(GL_TEXTURE_2D, texture.textureId));
+
+    float textureXStart = 0, textureXEnd = 1;
+    float textureYStart = 0, textureYEnd = 1;
+
+    if (textureX != 0)
+    {
+      textureXStart = 1.0f / texture.width * textureX;
+    }
+    if (textureWidth != 0)
+    {
+      textureXEnd = textureXStart + 1.0f / texture.width * textureWidth;
+    }
+
+    if (textureY != 0)
+    {
+      textureYEnd = 1.0f / texture.height * textureY;
+    }
+    if (textureHeight!= 0)
+    {
+      textureYStart = textureYEnd + 1.0f / texture.height * textureHeight;
+    }
+
+    // update VBO for each character
+    float vertices[6][4] = {
+      { x,         y + height,   textureXStart, textureYEnd   },
+      { x,         y,            textureXStart, textureYStart },
+      { x + width, y,            textureXEnd,   textureYStart },
+
+      { x,         y + height,   textureXStart, textureYEnd   },
+      { x + width, y,            textureXEnd,   textureYStart },
+      { x + width, y + height,   textureXEnd,   textureYEnd   }
+    };
+
+    GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, m_textVBO));
+    GL_CHECK(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices));
+    GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
+    GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, 6));
+
+    GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
+    GL_CHECK(glBindVertexArray(0));
+    GL_CHECK(glDisable(GL_BLEND));
+    GL_CHECK(glEnable(GL_DEPTH_TEST));
   }
 
   HWND Renderer::GetHWnd()
@@ -330,10 +458,13 @@ namespace WallpaperAPI
 
     float left = x, right = x + width, top = y, bottom = y + height;
 
-    m_textProjection = glm::ortho(left, right, bottom, top);
+    m_orthoProjection = glm::ortho(left, right, bottom, top);
 
     m_textShader.Use();
-    m_textShader.LoadMatrix4f("projection", glm::value_ptr(m_textProjection));
+    m_textShader.LoadMatrix4f("projection", glm::value_ptr(m_orthoProjection));
+
+    m_uiShader.Use();
+    m_uiShader.LoadMatrix4f("projection", glm::value_ptr(m_orthoProjection));
   }
 
   glm::vec4 Renderer::GetViewport()

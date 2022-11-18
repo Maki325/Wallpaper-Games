@@ -211,16 +211,16 @@ namespace WallpaperAPI
 
     std::string score = std::to_string(m_score);
 
-    int textWidth = renderer.GetTextWidth(score, 2.0f);
-    float half = textWidth / 2.0f;
-
-    int textWidth2 = renderer.GetTextWidth(score, 2.2f);
-    float half2 = textWidth2 / 2.0f;
-
     int width = renderer.GetViewport().z;
     float widthHalf = width / 2.0f;
 
-    renderer.RenderText(score, widthHalf - half2, 100.0f - 3.0f, 2.2f, glm::vec3(0, 0, 0));
-    renderer.RenderText(score, widthHalf - half, 100.0f, 2.0f, glm::vec3(1, 1, 1));
+    // renderer.RenderText(score, widthHalf, 100.0f - 3.0f, glm::vec3(0, 0, 0), 2.2f, true);
+    renderer.RenderText(score, widthHalf, 100.0f, glm::vec3(1, 1, 1), 1.0f, true, true);
+
+    renderer.RenderColoredQuad(100, 100, 100, 100, glm::vec4(0, 0, 0, 1));
+    // 156 x 85
+    // 256 x 256
+
+    renderer.RenderTexturedQuad(100, 100, 100, 100, m_player.m_texture, 185, 192, 200, 200);
   }
 }
