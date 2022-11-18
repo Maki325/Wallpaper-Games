@@ -23,7 +23,8 @@ namespace WallpaperAPI
         }
       }, glm::vec3(0, 0, 0), glm::vec3(0), glm::vec3(0.25), glm::vec3(0), "resources/textures/flappy-bird.png"),
     m_groundAABB(glm::vec2(0.0f, -1.0f), glm::vec2(10.0f, 0.24f)),
-    m_playerCollider(glm::vec2(0.0f, 0.0f), 0.10f)
+    m_playerCollider(glm::vec2(0.0f, 0.0f), 0.10f),
+    m_buttonTexture("resources/textures/button.png")
   {
   }
 
@@ -37,11 +38,22 @@ namespace WallpaperAPI
     m_ground.emplace_back(model, glm::vec3( 2.22, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/ground.png");
     m_ground.emplace_back(model, glm::vec3( 3.94, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/ground.png");
 
+    SetInitial();
+  }
+
+  void GameLayer::SetInitial()
+  {
+    m_player.m_position.y = m_playerCollider.m_position.y = 0;
+
     int pos = 5;
     for (auto& obstacle : m_obstacles)
     {
       obstacle.SetPosition(glm::vec3(pos++, GetHeight(), 0));
     }
+
+    m_score = 0;
+
+    m_gameState = GameState::INITIALIZED;
   }
   
   void GameLayer::OnDetach()
@@ -71,9 +83,9 @@ namespace WallpaperAPI
 
   void GameLayer::Update(float delta)
   {
-    if (Application::GetApp().GetInputManager().IsKeyDown(Input::Key::Up))
+    if (Application::GetApp().GetInputManager().IsKeyDown(Input::Key::R))
     {
-      m_score = 1234567890;
+      SetInitial();
     }
     switch (m_gameState)
     {
@@ -217,10 +229,7 @@ namespace WallpaperAPI
     // renderer.RenderText(score, widthHalf, 100.0f - 3.0f, glm::vec3(0, 0, 0), 2.2f, true);
     renderer.RenderText(score, widthHalf, 100.0f, glm::vec3(1, 1, 1), 1.0f, true, true);
 
-    renderer.RenderColoredQuad(100, 100, 100, 100, glm::vec4(0, 0, 0, 1));
-    // 156 x 85
-    // 256 x 256
-
-    renderer.RenderTexturedQuad(100, 100, 100, 100, m_player.m_texture, 185, 192, 200, 200);
+    // renderer.RenderTexturedQuad(widthHalf - 50, 100, 100, 100, m_buttonTexture);
+    // renderer.RenderButton(widthHalf - 250, 100, 500, 100, m_buttonTexture, "Test", glm::vec3(1, 1, 1), 0.5f);
   }
 }

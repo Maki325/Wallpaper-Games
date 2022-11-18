@@ -40,7 +40,7 @@ namespace WallpaperAPI
       return;
     }
 
-    Monitor& monitor = m_monitorManager.GetMonitors().at(0);
+    Monitor& monitor = m_monitorManager.GetMonitors().at(1);
     m_renderer.SetViewport(monitor.area);
 
     std::chrono::milliseconds previous = Utils::GetMillis();
@@ -62,6 +62,11 @@ namespace WallpaperAPI
       for (auto layer : m_layers)
       {
         layer->OnUpdate(elapsed.count() / 1000.0f);
+      }
+
+      if (Application::GetApp().GetInputManager().IsKeyDown(Input::Key::Delete))
+      {
+        m_running = false;
       }
 
 #ifndef WG_DIST

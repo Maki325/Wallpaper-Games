@@ -135,10 +135,12 @@ namespace WallpaperAPI
       GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
       GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
+      auto metrics = face->glyph->metrics;
       m_characters[c] = {
           textureId,
           glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-          glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+          glm::ivec2(face->glyph->metrics.horiBearingX / 64, face->glyph->metrics.horiBearingY / 64),
+          glm::ivec2((metrics.horiBearingX - metrics.width) / 64, (metrics.horiBearingY - metrics.height) / 64),
           (unsigned int) face->glyph->advance.x
       };
     }
@@ -279,12 +281,19 @@ namespace WallpaperAPI
     GL_CHECK(glActiveTexture(GL_TEXTURE0));
     GL_CHECK(glBindVertexArray(m_textVAO));
 
-    int maxY = 0;
+    int maxY = 0, maxSizeY = 0;
     for (auto& c : text)
     {
       Character& ch = m_characters[c];
       if (ch.bearing.y > maxY) maxY = ch.bearing.y;
+      if (ch.size.y > maxSizeY) maxSizeY = ch.size.y;
     }
+    // maxY = GetTextHeight(text, scale);
+
+    // if (centered) {
+    //   y -= maxY / 2.0f;
+    // }
+
     if (shadow)
     {
       float oldX = x;
@@ -321,6 +330,20 @@ namespace WallpaperAPI
       x += (m_characters[c].advance >> 6) * scale;
     }
     return x;
+  }
+
+  int Renderer::GetTextHeight(const std::string& text, float scale)
+  {
+    // maxBearing - minHang
+    int y = 0, maxBearing = 0, minHang = 100000;
+    for (auto& c : text)
+    {
+      Character& ch = m_characters[c];
+      if (ch.bearing.y * scale > maxBearing) maxBearing = ch.bearing.y * scale;
+      if (ch.hang.y * scale < minHang) minHang = ch.hang.y * scale;
+      if (ch.size.y * scale > y) y = ch.size.y * scale;
+    }
+    return maxBearing - minHang;
   }
 
   void Renderer::RenderColoredQuad(float x, float y, float width, float height, glm::vec4& color)
@@ -422,6 +445,13 @@ namespace WallpaperAPI
     GL_CHECK(glBindVertexArray(0));
     GL_CHECK(glDisable(GL_BLEND));
     GL_CHECK(glEnable(GL_DEPTH_TEST));
+  }
+
+  void Renderer::RenderButton(float x, float y, float width, float height, Texture& background, const std::string& text, glm::vec3 &textColor, float textScale, int textureX, int textureY, int textureWidth, int textureHeight)
+  {
+    Renderer::RenderTexturedQuad(x, y, width, height, background, textureX, textureY, textureWidth, textureHeight);
+    int textHeight = GetTextHeight(text, textScale);
+    Renderer::RenderText(text, x + width / 2.0f, y + (height - textHeight) / 2.0f, textColor, textScale, true);
   }
 
   HWND Renderer::GetHWnd()
