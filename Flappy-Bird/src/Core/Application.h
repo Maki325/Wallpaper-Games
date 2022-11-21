@@ -10,6 +10,7 @@
 #include "MonitorManager.h"
 #include "InputManager.h"
 #include "Layers/ImGuiLayer.h"
+#include "SystemTray/SystemTray.h"
 
 namespace WallpaperAPI
 {
@@ -42,6 +43,8 @@ namespace WallpaperAPI
     Renderer m_renderer;
     MonitorManager m_monitorManager;
     InputManager m_inputManager;
+
+    SystemTray::SystemTray m_systemTray;
 
     std::vector<Layer*> m_layers;
     ImGuiLayer *m_imGuiLayer;

@@ -4,6 +4,8 @@
 #include "Layers/ImGuiGLFWLayer.h"
 #include "Layers/ImGuiDesktopLayer.h"
 #include "imgui.h"
+#include "SystemTray/Components/Button.h"
+#include "SystemTray/Components/Checkbox.h"
 
 namespace WallpaperAPI
 {
@@ -14,11 +16,27 @@ namespace WallpaperAPI
     m_renderer(Renderer(m_desktopHWnd, m_desktopDC)),
     m_monitorManager(MonitorManager(m_desktopHWnd, m_desktopDC)),
     m_inputManager(m_desktopHWnd),
-    m_imGuiLayer(new ImGuiDesktopLayer(m_desktopHWnd))
+    m_imGuiLayer(new ImGuiDesktopLayer(m_desktopHWnd)),
+    m_systemTray(SystemTray::SystemTray("Flappy Bird", "resources/icons/flappy-bird.ico"))
   {
     s_app = this;
     srand((unsigned int) time(nullptr));
 
+    m_systemTray.AddComponent(
+      SystemTray::Checkbox(
+        "Running",
+        [&](bool state) {
+          std::cout << "State: " << state << std::endl;
+        }
+      )
+    );
+
+    m_systemTray.AddComponent(
+      SystemTray::Button(
+        "Quit",
+        [&] { m_running = false; }
+      )
+    );
 
     AddLayer(new GameLayer());
     AddLayer(m_imGuiLayer);
@@ -41,19 +59,13 @@ namespace WallpaperAPI
       return;
     }
 
-    Monitor& monitor = m_monitorManager.GetMonitors().at(1);
+    Monitor& monitor = m_monitorManager.GetMonitors().at(0);
     m_renderer.SetViewport(monitor.area);
 
     std::chrono::milliseconds previous = Utils::GetMillis();
     std::chrono::milliseconds lastFrameTime = previous;
     size_t frames = 0;
     const std::chrono::milliseconds SECOND(1000);
-
-    m_imGuiLayer->OnAttach();
-    for (Layer* layer : m_layers)
-    {
-      layer->OnAttach();
-    }
 
     while (m_running)
     {
@@ -87,6 +99,8 @@ namespace WallpaperAPI
 #endif
 
       m_renderer.SwapBuffers();
+
+      m_systemTray.Update();
 
       frames++;
       if (current - lastFrameTime > SECOND)
