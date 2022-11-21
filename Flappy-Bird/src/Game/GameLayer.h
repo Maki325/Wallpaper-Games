@@ -26,6 +26,8 @@ namespace WallpaperAPI
     void OnImGuiRender() override;
 
   private:
+    void SetInitial();
+
     void Update(float delta);
     void UpdateInitialized(float delta);
     void UpdateRunning(float delta);
@@ -35,10 +37,13 @@ namespace WallpaperAPI
     void ScrollPipes(float delta);
     void Render();
 
+    void RenderButton(float x, float y, float width, float height, const std::string& text, glm::vec3& textColor, float textScale = 1.0f);
+
   private:
     Entity m_player;
     Obstacle m_obstacles[11];
     size_t m_score = 0;
+    Texture m_buttonTexture;
 
     std::vector<Entity> m_ground;
     AABB m_groundAABB;

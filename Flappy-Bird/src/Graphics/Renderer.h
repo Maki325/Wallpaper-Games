@@ -25,6 +25,7 @@ namespace WallpaperAPI
 
     void RenderText(const std::string& text, float x, float y, glm::vec3 &color, float scale = 1.0f, bool centered = false, bool shadow = false, glm::vec3& shadowColor = glm::vec3(0.0f, 0.0f, 0.0f));
     int GetTextWidth(const std::string& text, float scale = 1.0f);
+    int GetTextHeight(const std::string& text, float scale = 1.0f);
 
     void RenderColoredQuad(float x, float y, float width, float height, glm::vec4& color);
     void RenderTexturedQuad(float x, float y, float width, float height, Texture& texture, int textureX = 0, int textureY = 0, int textureWidth = 0, int textureHeight = 0);
@@ -55,6 +56,7 @@ namespace WallpaperAPI
       unsigned int textureID;  // ID handle of the glyph texture
       glm::ivec2   size;       // Size of glyph
       glm::ivec2   bearing;    // Offset from baseline to left/top of glyph
+      glm::ivec2   hang;
       unsigned int advance;    // Offset to advance to next glyph
     };
 
