@@ -16,11 +16,12 @@ namespace WallpaperAPI
     m_inputManager(m_desktopHWnd),
     m_imGuiLayer(new ImGuiDesktopLayer(m_desktopHWnd))
   {
+    s_app = this;
     srand((unsigned int) time(nullptr));
 
-    m_layers.push_back(new GameLayer());
 
-    s_app = this;
+    AddLayer(new GameLayer());
+    AddLayer(m_imGuiLayer);
   }
 
   Application::~Application() {}
@@ -105,6 +106,25 @@ namespace WallpaperAPI
     }
 
     ResetWallpaper();
+  }
+
+  void Application::AddLayer(Layer* layer)
+  {
+    layer->OnAttach();
+    m_layers.push_back(layer);
+  }
+
+  void Application::RemoveLayer(Layer* layer)
+  {
+    for (auto it = m_layers.begin();it != m_layers.end();it++)
+    {
+      auto currentLayer = *it;
+      if (currentLayer == layer) {
+        layer->OnDetach();
+        m_layers.erase(it);
+        return;
+      }
+    }
   }
 
   void Application::Exit()

@@ -21,6 +21,9 @@ namespace WallpaperAPI
 
     void Run();
 
+    void AddLayer(Layer* layer);
+    void RemoveLayer(Layer* layer);
+
     void Exit();
 
     static Application& GetApp() { return *s_app; }
