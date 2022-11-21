@@ -113,7 +113,6 @@ namespace WallpaperAPI
       previous = current;
     }
 
-    m_imGuiLayer->OnDetach();
     for (auto layer : m_layers)
     {
       layer->OnDetach();
