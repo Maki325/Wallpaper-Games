@@ -107,6 +107,11 @@ namespace WallpaperAPI
     ResetWallpaper();
   }
 
+  void Application::Exit()
+  {
+    m_running = false;
+  }
+
   void Application::ResetWallpaper() {
     WCHAR path[MAX_PATH];
     SystemParametersInfo(SPI_GETDESKWALLPAPER, MAX_PATH, &path[0], 0);

@@ -21,6 +21,8 @@ namespace WallpaperAPI
 
     void Run();
 
+    void Exit();
+
     static Application& GetApp() { return *s_app; }
 
     Renderer& GetRenderer() { return m_renderer; }

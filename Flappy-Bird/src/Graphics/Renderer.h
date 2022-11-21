@@ -30,8 +30,6 @@ namespace WallpaperAPI
     void RenderColoredQuad(float x, float y, float width, float height, glm::vec4& color);
     void RenderTexturedQuad(float x, float y, float width, float height, Texture& texture, int textureX = 0, int textureY = 0, int textureWidth = 0, int textureHeight = 0);
 
-    void RenderButton(float x, float y, float width, float height, Texture& background, const std::string& text, glm::vec3& textColor, float textScale = 1.0f, int textureX = 0, int textureY = 0, int textureWidth = 0, int textureHeight = 0);
-
     void SwapBuffers();
     void SetViewport(RECT& rect);
     void SetViewport(int x, int y, int width, int height);

@@ -45,7 +45,7 @@ namespace WallpaperAPI
   {
     m_player.m_position.y = m_playerCollider.m_position.y = 0;
 
-    int pos = 5;
+    int pos = 3;
     for (auto& obstacle : m_obstacles)
     {
       obstacle.SetPosition(glm::vec3(pos++, GetHeight(), 0));
@@ -96,6 +96,7 @@ namespace WallpaperAPI
       UpdateRunning(delta);
       break;
     case GameState::FAILED:
+      UpdateFailed(delta);
       break;
     default:
       break;
@@ -156,6 +157,39 @@ namespace WallpaperAPI
 
   void GameLayer::UpdateFailed(float delta)
   {
+    Application& app = Application::GetApp();
+    Renderer& renderer = app.GetRenderer();
+    InputManager &inputManager = app.GetInputManager();
+    auto pos = inputManager.GetMousePosition();
+
+    int width = renderer.GetViewport().z;
+    int height = renderer.GetViewport().w;
+    float widthHalf = width / 2.0f;
+
+    if (!inputManager.IsMouseButtonDown(Input::MouseButton::ButtonLeft))
+    {
+      return;
+    }
+    // widthHalf - 250, height / 2.0f, 500, 80
+    if (pos.x >= widthHalf - 250 && pos.x <= widthHalf + 250 &&
+        pos.y >= height / 2.0f && pos.y <= height / 2.0f + 80)
+    {
+      SetInitial();
+    }
+
+    // widthHalf - 250, height / 2.0f + 90, 245, 60
+    if (pos.x >= widthHalf - 250 && pos.x <= widthHalf - 5 &&
+      pos.y >= height / 2.0f + 90 && pos.y <= height / 2.0f + 90 + 60)
+    {
+      INFO("Scoreboard");
+    }
+
+    // widthHalf + 5, height / 2.0f + 90, 245, 60
+    if (pos.x >= widthHalf + 5 && pos.x <= widthHalf + 245 &&
+      pos.y >= height / 2.0f + 90 && pos.y <= height / 2.0f + 90 + 60)
+    {
+      app.Exit();
+    }
   }
 
   void GameLayer::ScrollGround(float delta)
@@ -224,6 +258,7 @@ namespace WallpaperAPI
     std::string score = std::to_string(m_score);
 
     int width = renderer.GetViewport().z;
+    int height = renderer.GetViewport().w;
     float widthHalf = width / 2.0f;
 
     // renderer.RenderText(score, widthHalf, 100.0f - 3.0f, glm::vec3(0, 0, 0), 2.2f, true);
@@ -231,5 +266,30 @@ namespace WallpaperAPI
 
     // renderer.RenderTexturedQuad(widthHalf - 50, 100, 100, 100, m_buttonTexture);
     // renderer.RenderButton(widthHalf - 250, 100, 500, 100, m_buttonTexture, "Test", glm::vec3(1, 1, 1), 0.5f);
+
+    if (m_gameState == GameState::FAILED)
+    {
+      RenderButton(widthHalf - 250, height / 2.0f, 500, 80, "Restart", glm::vec3(1, 1, 1), 0.4f);
+
+      RenderButton(widthHalf - 250, height / 2.0f + 90, 245, 60, "Scoreboard", glm::vec3(1, 1, 1), 0.30f);
+      RenderButton(widthHalf + 5, height / 2.0f + 90, 245, 60, "Exit", glm::vec3(1, 1, 1), 0.30f);
+    }
+  }
+
+  void GameLayer::RenderButton(float x, float y, float width, float height, const std::string& text, glm::vec3& textColor, float textScale)
+  {
+    Application& app = Application::GetApp();
+    Renderer& renderer = app.GetRenderer();
+
+    // (1.0f, 0.82f, 0.64f, 1.0f)
+    renderer.RenderColoredQuad(x, y, width, height, glm::vec4(0.91f, 1.0f, 0.55f, 1.0f));
+    // renderer.RenderColoredQuad(x + 10, y + 10, width - 20, height - 20, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    // rgb(155, 228, 88) = (0.61f, 0.88f, 0.35f, 1.0f)
+    // 0.42f, 0.71f, 0.28f, 1.0f
+    // rgb(232, 255, 141) =
+    renderer.RenderColoredQuad(x + 10, y + 10, width - 20, height - 20, glm::vec4(0.61f, 0.88f, 0.35f, 1.0f));
+
+    int textHeight = renderer.GetTextHeight(text, textScale);
+    renderer.RenderText(text, x + width / 2.0f, y + textHeight / 1.8f, textColor, textScale, true);
   }
 }

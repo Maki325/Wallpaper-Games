@@ -37,6 +37,8 @@ namespace WallpaperAPI
     void ScrollPipes(float delta);
     void Render();
 
+    void RenderButton(float x, float y, float width, float height, const std::string& text, glm::vec3& textColor, float textScale = 1.0f);
+
   private:
     Entity m_player;
     Obstacle m_obstacles[11];

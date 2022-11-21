@@ -447,13 +447,6 @@ namespace WallpaperAPI
     GL_CHECK(glEnable(GL_DEPTH_TEST));
   }
 
-  void Renderer::RenderButton(float x, float y, float width, float height, Texture& background, const std::string& text, glm::vec3 &textColor, float textScale, int textureX, int textureY, int textureWidth, int textureHeight)
-  {
-    Renderer::RenderTexturedQuad(x, y, width, height, background, textureX, textureY, textureWidth, textureHeight);
-    int textHeight = GetTextHeight(text, textScale);
-    Renderer::RenderText(text, x + width / 2.0f, y + (height - textHeight) / 2.0f, textColor, textScale, true);
-  }
-
   HWND Renderer::GetHWnd()
   {
     return m_hWnd;
