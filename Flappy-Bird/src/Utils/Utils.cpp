@@ -2,13 +2,6 @@
 #include "Utils.h"
 #include <CommCtrl.h>
 
-// LRESULT WINAPI WndProc22(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-LRESULT WINAPI WndProc23(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
-{
-  std::cout << "T" << std::endl;
-  return 0;
-}
-
 namespace WallpaperAPI
 {
   namespace Utils
