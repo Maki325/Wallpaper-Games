@@ -8,9 +8,6 @@ namespace WallpaperAPI
     float b;
   };
 
-  LineFormula GetLineFormula(glm::vec2 p1, glm::vec2 p2);
-  float DistanceBetweenLineAndPoint(glm::vec2 p1, glm::vec2 p2, glm::vec2 point);
-
   class Collider
   {
   public:

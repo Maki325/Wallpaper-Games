@@ -22,36 +22,6 @@ namespace WallpaperAPI
     return false;
   }
 
-  LineFormula GetLineFormula(glm::vec2 p1, glm::vec2 p2)
-  {
-    float y = p2.y - p1.y;
-    float x = p2.x - p1.x;
-    std::cout << "X: " << x << std::endl;
-    float m = x == 0 ? 0 : (y / x);
-    std::cout << "mmmmm: " << m << std::endl;
-    float b = p2.y - (m * p2.x);
-    return { m, b };
-  }
-
-  float DistanceBetweenLineAndPoint(glm::vec2 p1, glm::vec2 p2, glm::vec2 point)
-  {
-    if (p1.x == p2.x)
-    {
-      std::cout << "S" << std::endl;
-      return abs(point.x - p1.x);
-    }
-    auto formula = GetLineFormula(p1, p2);
-    // y = mx + c
-    // y = -(A / B) * x - C / B
-    // 
-    // c = C / B
-    // m = -(A / B)
-    //  
-    std::cout << "formula.m: " << formula.m << std::endl;
-    std::cout << "formula.b: " << formula.b << std::endl;
-    return abs(formula.m * point.x + point.y + formula.b) / sqrt(formula.m * formula.m + 1);
-  }
-
   template<>
   bool Collider::IsColliding<CircleCollider, AABB>(CircleCollider& one, AABB& two)
   {
@@ -72,7 +42,11 @@ namespace WallpaperAPI
       return true;
     }
 
-    return false;
+    float dx = (distX - two.m_size.x);
+    float dy = (distY - two.m_size.y);
+    float cornerDistance = dx * dx + dy * dy;
+
+    return (cornerDistance <= (one.m_radius * one.m_radius));
   }
 
 }
