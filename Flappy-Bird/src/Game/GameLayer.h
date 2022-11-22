@@ -11,7 +11,7 @@ namespace WallpaperAPI
   {
     INITIALIZED,
     RUNNING,
-    FAILED
+    FAILED,
   };
 
   class GameLayer : public Layer
@@ -25,6 +25,7 @@ namespace WallpaperAPI
     void OnUpdate(float delta) override;
     void OnImGuiRender() override;
 
+    void PauseGame();
   private:
     void SetInitial();
 
@@ -32,6 +33,7 @@ namespace WallpaperAPI
     void UpdateInitialized(float delta);
     void UpdateRunning(float delta);
     void UpdateFailed(float delta);
+    void UpdatePaused(float delta);
     void ScrollGround(float delta);
     float GetHeight();
     void ScrollPipes(float delta);
@@ -47,6 +49,7 @@ namespace WallpaperAPI
     Texture m_buttonTexture;
 
     std::vector<Entity> m_ground;
+    std::function<void()> m_menuOpenedCallback;
     AABB m_groundAABB;
     CircleCollider m_playerCollider;
 

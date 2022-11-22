@@ -47,6 +47,9 @@ namespace WallpaperAPI
       )
     );
 
+    m_menuOpenedCallback = [=] { this->PauseGame(); };
+    app.GetSystemTray().AddMenuOpenListener(&m_menuOpenedCallback);
+
     SetInitial();
   }
 
@@ -67,12 +70,21 @@ namespace WallpaperAPI
   
   void GameLayer::OnDetach()
   {
+    auto& app = Application::GetApp();
+    app.GetSystemTray().RemoveMenuOpenListener(&m_menuOpenedCallback);
   }
 
   void GameLayer::OnUpdate(float delta)
   {
     Application::GetApp().GetRenderer().MakeContextCurrent();
-    if(m_running) Update(delta);
+    if (m_running)
+    {
+      Update(delta);
+    }
+    else
+    {
+      UpdatePaused(delta);
+    }
     Render();
   }
 
@@ -112,6 +124,14 @@ namespace WallpaperAPI
     }
   }
 
+  void GameLayer::PauseGame()
+  {
+    m_running = false;
+    Application::GetApp().GetRenderer().MakeContextCurrent();
+    Render();
+    Application::GetApp().GetRenderer().SwapBuffers();
+  }
+
   void GameLayer::UpdateInitialized(float delta)
   {
     ScrollGround(delta);
@@ -149,7 +169,6 @@ namespace WallpaperAPI
 
      if (Collider::IsColliding(m_playerCollider, m_groundAABB))
      {
-       std::cout << "m_score: " << m_score << std::endl;
        m_gameState = GameState::FAILED;
      }
 
@@ -157,7 +176,6 @@ namespace WallpaperAPI
     {
       if (obstacle.IsColliding(m_playerCollider))
       {
-        std::cout << "m_score: " << m_score << std::endl;
         m_gameState = GameState::FAILED;
         break;
       }
@@ -171,6 +189,9 @@ namespace WallpaperAPI
     InputManager &inputManager = app.GetInputManager();
     auto pos = inputManager.GetMousePosition();
 
+    int startX = renderer.GetViewport().x;
+    int startY = renderer.GetViewport().y;
+
     int width = renderer.GetViewport().z;
     int height = renderer.GetViewport().w;
     float widthHalf = width / 2.0f;
@@ -180,24 +201,32 @@ namespace WallpaperAPI
       return;
     }
     // widthHalf - 250, height / 2.0f, 500, 80
-    if (pos.x >= widthHalf - 250 && pos.x <= widthHalf + 250 &&
-        pos.y >= height / 2.0f && pos.y <= height / 2.0f + 80)
+    if (pos.x - startX >= widthHalf - 250 && pos.x - startX <= widthHalf + 250 &&
+        pos.y - startY >= height / 2.0f && pos.y - startY <= height / 2.0f + 80)
     {
       SetInitial();
     }
 
     // widthHalf - 250, height / 2.0f + 90, 245, 60
-    if (pos.x >= widthHalf - 250 && pos.x <= widthHalf - 5 &&
-      pos.y >= height / 2.0f + 90 && pos.y <= height / 2.0f + 90 + 60)
+    if (pos.x - startX >= widthHalf - 250 && pos.x - startX <= widthHalf - 5 &&
+      pos.y - startY >= height / 2.0f + 90 && pos.y - startY <= height / 2.0f + 90 + 60)
     {
       INFO("Scoreboard");
     }
 
     // widthHalf + 5, height / 2.0f + 90, 245, 60
-    if (pos.x >= widthHalf + 5 && pos.x <= widthHalf + 245 &&
-      pos.y >= height / 2.0f + 90 && pos.y <= height / 2.0f + 90 + 60)
+    if (pos.x - startX >= widthHalf + 5 && pos.x - startX <= widthHalf + 245 &&
+      pos.y - startY >= height / 2.0f + 90 && pos.y - startY <= height / 2.0f + 90 + 60)
     {
       app.Exit();
+    }
+  }
+
+  void GameLayer::UpdatePaused(float delta)
+  {
+    if (Application::GetApp().GetInputManager().IsKeyDown(Input::Key::Space))
+    {
+      m_running = true;
     }
   }
 
@@ -278,10 +307,21 @@ namespace WallpaperAPI
 
     if (m_gameState == GameState::FAILED)
     {
+      // 100 height - 0.5f font scale
       RenderButton(widthHalf - 250, height / 2.0f, 500, 80, "Restart", glm::vec3(1, 1, 1), 0.4f);
 
       RenderButton(widthHalf - 250, height / 2.0f + 90, 245, 60, "Scoreboard", glm::vec3(1, 1, 1), 0.30f);
       RenderButton(widthHalf + 5, height / 2.0f + 90, 245, 60, "Exit", glm::vec3(1, 1, 1), 0.30f);
+    }
+
+    if (!m_running)
+    {
+      const std::string paused = "PAUSED";
+      float textHeight = renderer.GetTextHeight(paused);
+      renderer.RenderColoredQuad(0, 0, width, height, glm::vec4(0.0f, 0.0f, 0.0f, 0.25f));
+      renderer.RenderText(paused, widthHalf, (height - textHeight) / 2.0f, glm::vec3(1, 1, 1), 1.0f, true, true);
+
+      renderer.RenderText("Press space to unpause!", widthHalf, (height - textHeight) / 2.0f + 150, glm::vec3(1, 1, 1), 0.25f, true, true);
     }
   }
 
