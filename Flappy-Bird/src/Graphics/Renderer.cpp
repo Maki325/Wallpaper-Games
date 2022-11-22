@@ -268,7 +268,7 @@ namespace WallpaperAPI
     y += m_viewport.y;
 
     if (centered) {
-      x -= GetTextWidth(text, scale) / 2.0f;
+      x -= GetTextWidth(text, scale, shadow) / 2.0f;
     }
 
     m_textShader.Use();
@@ -322,8 +322,9 @@ namespace WallpaperAPI
     GL_CHECK(glEnable(GL_DEPTH_TEST));
   }
 
-  int Renderer::GetTextWidth(const std::string& text, float scale)
+  int Renderer::GetTextWidth(const std::string& text, float scale, bool shadow)
   {
+    if (shadow) scale += 0.1f;
     int x = 0;
     for (auto& c : text)
     {

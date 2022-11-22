@@ -24,7 +24,7 @@ namespace WallpaperAPI
     void RenderAABB(AABB& aabb);
 
     void RenderText(const std::string& text, float x, float y, glm::vec3 &color, float scale = 1.0f, bool centered = false, bool shadow = false, glm::vec3& shadowColor = glm::vec3(0.0f, 0.0f, 0.0f));
-    int GetTextWidth(const std::string& text, float scale = 1.0f);
+    int GetTextWidth(const std::string& text, float scale = 1.0f, bool shadow = false);
     int GetTextHeight(const std::string& text, float scale = 1.0f);
 
     void RenderColoredQuad(float x, float y, float width, float height, glm::vec4& color);
