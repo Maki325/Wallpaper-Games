@@ -32,6 +32,7 @@ namespace WallpaperAPI
     Renderer& GetRenderer() { return m_renderer; }
     MonitorManager& GetMonitorManager() { return m_monitorManager; }
     InputManager& GetInputManager() { return m_inputManager; }
+    SystemTray::SystemTray& GetSystemTray() { return m_systemTray; }
   private:
     void ResetWallpaper();
   private:

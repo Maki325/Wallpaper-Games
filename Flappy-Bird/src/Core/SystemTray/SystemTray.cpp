@@ -89,9 +89,9 @@ namespace WallpaperAPI
       m_wideStrings.clear();
 
       HMENU menu = CreatePopupMenu();
-      for (const auto& entry : m_components)
+      for (auto it = m_components.rbegin(); it != m_components.rend(); it++)
       {
-        auto* item = entry.get();
+        auto* item = (*it).get();
         m_wideStrings.push_back(std::move(converter.from_bytes(item->GetText())));
 
         MENUITEMINFO winItem{ 0 };

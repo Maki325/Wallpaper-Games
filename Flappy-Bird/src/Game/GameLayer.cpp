@@ -4,7 +4,8 @@
 #include "Core/Loader.h"
 #include "Graphics/Renderer.h"
 #include "Colliders/Collider.h"
-#include "imgui.h"
+#include <imgui.h>
+#include "Core/SystemTray/Components/SyncedCheckbox.h"
 
 namespace WallpaperAPI
 {
@@ -30,13 +31,21 @@ namespace WallpaperAPI
 
   void GameLayer::OnAttach()
   {
-    Application::GetApp().GetRenderer().MakeContextCurrent();
+    auto &app = Application::GetApp();
+    app.GetRenderer().MakeContextCurrent();
     Model model = Loader::LoadObj("resources/models/ground.obj");
 
     m_ground.emplace_back(model, glm::vec3(-1.22, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/ground.png");
     m_ground.emplace_back(model, glm::vec3( 0.50, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/ground.png");
     m_ground.emplace_back(model, glm::vec3( 2.22, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/ground.png");
     m_ground.emplace_back(model, glm::vec3( 3.94, -1, 0), glm::vec3(0), glm::vec3(0.25f), glm::vec3(0), "resources/textures/ground.png");
+
+    app.GetSystemTray().AddComponent(
+      SystemTray::SyncedCheckbox(
+        "Running",
+        m_running
+      )
+    );
 
     SetInitial();
   }
@@ -63,7 +72,7 @@ namespace WallpaperAPI
   void GameLayer::OnUpdate(float delta)
   {
     Application::GetApp().GetRenderer().MakeContextCurrent();
-    Update(delta);
+    if(m_running) Update(delta);
     Render();
   }
 

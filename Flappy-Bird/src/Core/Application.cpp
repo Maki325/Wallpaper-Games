@@ -5,7 +5,6 @@
 #include "Layers/ImGuiDesktopLayer.h"
 #include "imgui.h"
 #include "SystemTray/Components/Button.h"
-#include "SystemTray/Components/Checkbox.h"
 
 namespace WallpaperAPI
 {
@@ -22,16 +21,7 @@ namespace WallpaperAPI
     s_app = this;
     srand((unsigned int) time(nullptr));
 
-    m_systemTray.AddComponent(
-      SystemTray::Checkbox(
-        "Running",
-        [&](bool state) {
-          std::cout << "State: " << state << std::endl;
-        }
-      )
-    );
-
-    m_systemTray.AddComponent(
+    GetSystemTray().AddComponent(
       SystemTray::Button(
         "Quit",
         [&] { m_running = false; }
@@ -72,9 +62,10 @@ namespace WallpaperAPI
       std::chrono::milliseconds current = Utils::GetMillis();
       std::chrono::milliseconds elapsed = current - previous;
 
+      float delta = elapsed.count() / 1000.0f;
       for (auto layer : m_layers)
       {
-        layer->OnUpdate(elapsed.count() / 1000.0f);
+        layer->OnUpdate(delta);
       }
 
       if (Application::GetApp().GetInputManager().IsKeyDown(Input::Key::Delete))
@@ -100,8 +91,6 @@ namespace WallpaperAPI
 
       m_renderer.SwapBuffers();
 
-      m_systemTray.Update();
-
       frames++;
       if (current - lastFrameTime > SECOND)
       {
@@ -110,6 +99,9 @@ namespace WallpaperAPI
         lastFrameTime = current;
       }
 
+      // previous = Utils::GetMillis() - current;
+      m_systemTray.Update();
+      // previous = Utils::GetMillis() - previous;
       previous = current;
     }
 

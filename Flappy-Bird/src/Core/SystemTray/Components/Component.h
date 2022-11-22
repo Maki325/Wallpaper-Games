@@ -4,7 +4,7 @@ namespace WallpaperAPI
 {
   namespace SystemTray
   {
-    struct SystemTray;
+    class SystemTray;
 
     class Component
     {

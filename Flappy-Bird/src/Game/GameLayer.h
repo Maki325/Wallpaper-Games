@@ -40,6 +40,7 @@ namespace WallpaperAPI
     void RenderButton(float x, float y, float width, float height, const std::string& text, glm::vec3& textColor, float textScale = 1.0f);
 
   private:
+    bool m_running = true;
     Entity m_player;
     Obstacle m_obstacles[11];
     size_t m_score = 0;
