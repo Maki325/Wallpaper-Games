@@ -10,12 +10,12 @@ namespace WallpaperAPI
     public:
       SyncedCheckbox(const std::string& text, bool &toggled);
 
-      void Toggle();
       bool IsToggled();
 
       void CreateWindowsComponent(MENUITEMINFO& winItem) override;
       void HandleClick() override;
 
+      bool ShouldRecreate(MENUITEMINFO& winItem) override;
     private:
       bool& m_toggled;
     };

@@ -23,15 +23,20 @@ namespace WallpaperAPI
         UpdateTray();
       }
 
+      void AddMenuOpenListener(std::function<void()>* listener);
+      void RemoveMenuOpenListener(std::function<void()>* listener);
+
     private:
       void Init();
       void UpdateTray();
+      void ShouldRecreateMenu();
 
       HMENU CreateMenu();
       static LRESULT CALLBACK wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
       std::vector<std::unique_ptr<Component>> m_components;
       std::vector<std::wstring> m_wideStrings;
+      std::vector<std::function<void()>*> m_menuOpenedListeners;
 
       static std::unordered_map<HWND, SystemTray&> s_systemTrays;
 

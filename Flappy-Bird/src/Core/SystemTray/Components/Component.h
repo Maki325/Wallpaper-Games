@@ -20,6 +20,7 @@ namespace WallpaperAPI
 
       virtual void CreateWindowsComponent(MENUITEMINFO &winItem) = 0;
       virtual void HandleClick() = 0;
+      virtual bool ShouldRecreate(MENUITEMINFO& winItem) = 0;
 
     protected:
       SystemTray *m_systemTray = nullptr;

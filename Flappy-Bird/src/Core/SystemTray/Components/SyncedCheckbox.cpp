@@ -19,5 +19,14 @@ namespace WallpaperAPI
 
       winItem.fState |= IsToggled() ? MFS_CHECKED : MFS_UNCHECKED;
     }
+
+    bool SyncedCheckbox::ShouldRecreate(MENUITEMINFO& winItem) {
+      if ((winItem.fState & MFS_CHECKED) == winItem.fState && IsToggled()
+        || (winItem.fState & MFS_UNCHECKED) == winItem.fState && !IsToggled())
+      {
+        return false;
+      }
+      return true;
+    }
   }
 }

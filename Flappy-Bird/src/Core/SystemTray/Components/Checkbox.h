@@ -10,12 +10,12 @@ namespace WallpaperAPI
     public:
       Checkbox(const std::string& text, std::function<void(bool)> callback, bool toggled = false);
 
-      void Toggle();
       bool IsToggled();
 
       void CreateWindowsComponent(MENUITEMINFO& winItem) override;
       void HandleClick() override;
 
+      bool ShouldRecreate(MENUITEMINFO& winItem) override { return false; }
     private:
       bool m_toggled;
       std::function<void(bool)> m_callback;

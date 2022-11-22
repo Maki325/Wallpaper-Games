@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "SystemTray.h"
 #include "Components/Button.h"
+#include "Core/Application.h"
 #include <codecvt>
 
 static constexpr auto WM_SYS_TRAY = WM_APP + 1;
@@ -110,6 +111,28 @@ namespace WallpaperAPI
       return menu;
     }
 
+    void SystemTray::ShouldRecreateMenu()
+    {
+      size_t count = GetMenuItemCount(m_hMenu);
+      for (size_t i = 0; i < count; i++)
+      {
+        MENUITEMINFO item{ 0 };
+        item.cbSize = sizeof(MENUITEMINFO);
+        item.fMask = MIIM_TYPE | MIIM_STATE | MIIM_DATA | MIIM_ID;
+        if (!GetMenuItemInfo(m_hMenu, i, true, &item)) {
+          continue;
+        }
+
+        auto* component = reinterpret_cast<Component*>(item.dwItemData);
+        bool should = component->ShouldRecreate(item);
+        if (should)
+        {
+          UpdateTray();
+          return;
+        }
+      }
+    }
+
     void SystemTray::Update()
     {
       static MSG msg;
@@ -117,6 +140,23 @@ namespace WallpaperAPI
       {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
+      }
+    }
+
+    void SystemTray::AddMenuOpenListener(std::function<void()>* listener)
+    {
+      m_menuOpenedListeners.push_back(listener);
+    }
+
+    void SystemTray::RemoveMenuOpenListener(std::function<void()>* listener)
+    {
+      for (auto it = m_menuOpenedListeners.begin(); it != m_menuOpenedListeners.end(); it++)
+      {
+        if (*it == listener)
+        {
+          m_menuOpenedListeners.erase(it);
+          return;
+        }
       }
     }
 
@@ -130,6 +170,8 @@ namespace WallpaperAPI
         GetCursorPos(&p);
         SetForegroundWindow(hwnd);
         SystemTray& tray = s_systemTrays.at(hwnd);
+        for (auto* listener : tray.m_menuOpenedListeners) (*listener)();
+        tray.ShouldRecreateMenu();
         auto cmd = TrackPopupMenu(tray.m_hMenu, TPM_RETURNCMD | TPM_NONOTIFY, p.x, p.y, 0, hwnd, nullptr);
         SendMessage(hwnd, WM_COMMAND, cmd, 0);
         return 0;
