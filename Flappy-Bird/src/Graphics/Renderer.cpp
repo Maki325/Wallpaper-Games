@@ -141,7 +141,7 @@ namespace WallpaperAPI
           glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
           glm::ivec2(face->glyph->metrics.horiBearingX / 64, face->glyph->metrics.horiBearingY / 64),
           glm::ivec2((metrics.horiBearingX - metrics.width) / 64, (metrics.horiBearingY - metrics.height) / 64),
-          (unsigned int) face->glyph->advance.x
+          (unsigned int) face->glyph->advance.x >> 6 // bitshift by 6 to get value in pixels (2^6 = 64)
       };
     }
 
@@ -262,16 +262,25 @@ namespace WallpaperAPI
     GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, 6));
   }
 
-  void Renderer::RenderText(const std::string& text, float x, float y, glm::vec3 &color, float scale, bool centered, bool shadow, glm::vec3& shadowColor)
+  void Renderer::RenderText(const Text& text)
   {
-    x += m_viewport.x;
-    y += m_viewport.y;
+    float x = text.x() + m_viewport.x;
+    float y = text.y() + m_viewport.y;
 
-    if (centered) {
-      x -= GetTextWidth(text, scale, shadow) / 2.0f;
+    float textWidth = GetTextWidth(text);
+    if (text.centeredHorizontal())
+    {
+      x -= textWidth / 2.0f;
+    }
+
+    if (text.centeredVertical())
+    {
+      float textHeight = GetTextHeight(text);
+      y -= textHeight / 2.0f;
     }
 
     m_textShader.Use();
+    m_textShader.LoadVec2("cutoff", { 0, 0 });
     GL_CHECK(glDisable(GL_CULL_FACE));
     GL_CHECK(glDisable(GL_DEPTH_TEST));
     GL_CHECK(glEnable(GL_BLEND));
@@ -282,37 +291,43 @@ namespace WallpaperAPI
     GL_CHECK(glBindVertexArray(m_textVAO));
 
     int maxY = 0, maxSizeY = 0;
-    for (auto& c : text)
+    for (auto& c : text.text())
     {
       Character& ch = m_characters[c];
       if (ch.bearing.y > maxY) maxY = ch.bearing.y;
       if (ch.size.y > maxSizeY) maxSizeY = ch.size.y;
     }
-    // maxY = GetTextHeight(text, scale);
 
-    // if (centered) {
-    //   y -= maxY / 2.0f;
-    // }
-
-    if (shadow)
+    if (text.shadow())
     {
-      float oldX = x;
-      m_textShader.LoadVec3("textColor", shadowColor);
-      for (auto& c : text)
+      float shadowX = x;
+      m_textShader.LoadVec3("textColor", text.shadowColor());
+      float scaleShadow = text.scale() + 0.10f;
+      for (auto& c : text.text())
       {
         Character& ch = m_characters[c];
-        RenderCharacter(c, x - ch.size.x * 0.05f, y - ch.size.y * 0.05f, scale + 0.20f, maxY);
-        x += (ch.advance >> 6) * (scale + 0.1f); // bitshift by 6 to get value in pixels (2^6 = 64)
+        RenderCharacter(c, shadowX - ch.size.x * 0.05f, y - ch.size.y * 0.05f, scaleShadow, maxY);
+        shadowX += ch.advance * text.scale();
       }
-      x = oldX;
-      scale += 0.1f;
     }
-    m_textShader.LoadVec3("textColor", color);
-    for (auto &c : text)
+    m_textShader.LoadVec3("textColor", text.color());
+    int dotWidth = m_characters['.'].advance * text.scale();
+    bool shouldCut = text.width() != 0 && textWidth > text.width();
+
+    int accumulatedWidth = 0;
+    for (size_t i = 0;i < text.text().length();i++)
     {
+      m_textShader.LoadVec2("cutoff", glm::vec2(0));
+      auto& c = text.text().at(i);
       Character& ch = m_characters[c];
-      RenderCharacter(c, x, y, scale, maxY);
-      x += (ch.advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64)
+      auto charWidth = ch.advance * text.scale();
+      if (shouldCut && text.ShouldRenderOverflow(accumulatedWidth, i, *this)) {
+        text.RenderOverflow(*this, x, y, maxY, i, accumulatedWidth);
+        break;
+      }
+      RenderCharacter(c, x, y, text.scale(), maxY);
+      x += charWidth;
+      accumulatedWidth += charWidth;
     }
     GL_CHECK(glBindVertexArray(0));
     GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
@@ -322,27 +337,26 @@ namespace WallpaperAPI
     GL_CHECK(glEnable(GL_DEPTH_TEST));
   }
 
-  int Renderer::GetTextWidth(const std::string& text, float scale, bool shadow)
+  float Renderer::GetTextWidth(const Text& text)
   {
-    if (shadow) scale += 0.1f;
-    int x = 0;
-    for (auto& c : text)
+    float width = 0;
+    for (auto& c : text.text())
     {
-      x += (m_characters[c].advance >> 6) * scale;
+      width += m_characters[c].advance * text.scale();
     }
-    return x;
+    return width;
   }
 
-  int Renderer::GetTextHeight(const std::string& text, float scale)
+  int Renderer::GetTextHeight(const Text& text)
   {
     // maxBearing - minHang
     int y = 0, maxBearing = 0, minHang = 100000;
-    for (auto& c : text)
+    for (auto& c : text.text())
     {
       Character& ch = m_characters[c];
-      if (ch.bearing.y * scale > maxBearing) maxBearing = ch.bearing.y * scale;
-      if (ch.hang.y * scale < minHang) minHang = ch.hang.y * scale;
-      if (ch.size.y * scale > y) y = ch.size.y * scale;
+      if (ch.bearing.y * text.scale() > maxBearing) maxBearing = ch.bearing.y * text.scale();
+      if (ch.hang.y * text.scale() < minHang) minHang = ch.hang.y * text.scale();
+      if (ch.size.y * text.scale() > y) y = ch.size.y * text.scale();
     }
     return maxBearing - minHang;
   }
@@ -489,11 +503,6 @@ namespace WallpaperAPI
 
     m_uiShader.Use();
     m_uiShader.LoadMatrix4f("projection", glm::value_ptr(m_orthoProjection));
-  }
-
-  glm::vec4 Renderer::GetViewport()
-  {
-    return m_viewport;
   }
 
   void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)

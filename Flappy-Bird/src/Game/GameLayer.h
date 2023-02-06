@@ -4,6 +4,8 @@
 #include "Colliders/AABB.h"
 #include "Colliders/CircleCollider.h"
 #include "Game/Obstacle.h"
+#include "Game/PausedOverlay.h"
+#include "Graphics/Text.h"
 
 namespace WallpaperAPI
 {
@@ -26,6 +28,9 @@ namespace WallpaperAPI
     void OnImGuiRender() override;
 
     void PauseGame();
+
+    const std::string& GetID() const override { return ID; }
+    static const std::string& ID;
   private:
     void SetInitial();
 
@@ -39,7 +44,7 @@ namespace WallpaperAPI
     void ScrollPipes(float delta);
     void Render();
 
-    void RenderButton(float x, float y, float width, float height, const std::string& text, glm::vec3& textColor, float textScale = 1.0f);
+    void RenderButton(float x, float y, float width, float height, Text& text);
 
   private:
     bool m_running = true;
@@ -54,6 +59,8 @@ namespace WallpaperAPI
     CircleCollider m_playerCollider;
 
     GameState m_gameState = GameState::INITIALIZED;
+
+    PausedOverlay* m_pausedOverlay;
   };
 }
 

@@ -3,6 +3,7 @@
 #include "Entity/Line.h"
 #include "Entity/Entity.h"
 #include "Colliders/AABB.h"
+#include "Text.h"
 #include "pch.h"
 
 namespace WallpaperAPI
@@ -23,9 +24,9 @@ namespace WallpaperAPI
     void RenderLine(Line& line, glm::vec3 &position = glm::vec3(0));
     void RenderAABB(AABB& aabb);
 
-    void RenderText(const std::string& text, float x, float y, glm::vec3 &color, float scale = 1.0f, bool centered = false, bool shadow = false, glm::vec3& shadowColor = glm::vec3(0.0f, 0.0f, 0.0f));
-    int GetTextWidth(const std::string& text, float scale = 1.0f, bool shadow = false);
-    int GetTextHeight(const std::string& text, float scale = 1.0f);
+    void RenderText(const Text& text);
+    float GetTextWidth(const Text& text);
+    int GetTextHeight(const Text& text);
 
     void RenderColoredQuad(float x, float y, float width, float height, glm::vec4& color);
     void RenderTexturedQuad(float x, float y, float width, float height, Texture& texture, int textureX = 0, int textureY = 0, int textureWidth = 0, int textureHeight = 0);
@@ -33,7 +34,10 @@ namespace WallpaperAPI
     void SwapBuffers();
     void SetViewport(RECT& rect);
     void SetViewport(int x, int y, int width, int height);
-    glm::vec4 GetViewport();
+
+    glm::vec4 GetViewport() const { return m_viewport; }
+    float inline vw() const { return GetViewport().z / 100.0f; }
+    float inline vh() { return GetViewport().w / 100.0f; }
 
     HWND GetHWnd();
     bool IsInitialized() { return m_initialized; }
@@ -75,5 +79,7 @@ namespace WallpaperAPI
 
     Character m_characters[CHARACTER_COUNT];
     unsigned int m_textVAO, m_textVBO;
+
+    friend struct Text;
   };
 }

@@ -83,4 +83,5 @@ namespace WallpaperAPI
     Application::GetApp().GetRenderer().MakeContextCurrent();
   }
 
+  const std::string& ImGuiGLFWLayer::ID = "imgui_glfw_layer";
 }

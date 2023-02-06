@@ -14,6 +14,8 @@ namespace WallpaperAPI
     void Begin() override;
     void End() override;
 
+    const std::string& GetID() const override { return ID; }
+    static const std::string ID;
   private:
     HWND m_hwnd;
   };

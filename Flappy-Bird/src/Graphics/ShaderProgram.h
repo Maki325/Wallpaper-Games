@@ -12,8 +12,9 @@ namespace WallpaperAPI
     void Use();
 
     void LoadFloat(const char* variable, float f);
-    void LoadVec3(const char* variable, glm::vec3& vec3);
-    void LoadVec4(const char* variable, glm::vec4& vec4);
+    void LoadVec2(const char* variable, const glm::vec2& vec2);
+    void LoadVec3(const char* variable, const glm::vec3& vec3);
+    void LoadVec4(const char* variable, const glm::vec4& vec4);
     void LoadMatrix4f(const char* variable, float* p_mat4);
   private:
     void IsValidVariable(const char* variable);

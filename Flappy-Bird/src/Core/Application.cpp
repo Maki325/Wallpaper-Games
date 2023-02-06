@@ -5,6 +5,7 @@
 #include "Layers/ImGuiDesktopLayer.h"
 #include "imgui.h"
 #include "SystemTray/Components/Button.h"
+#include "Game/ScoreboardOverlay.h"
 
 namespace WallpaperAPI
 {
@@ -28,7 +29,8 @@ namespace WallpaperAPI
       )
     );
 
-    AddLayer(new GameLayer());
+    AddLayer(new GameLayer(), false);
+    AddLayer(new ScoreboardOverlay());
     AddLayer(m_imGuiLayer);
   }
 
@@ -49,7 +51,7 @@ namespace WallpaperAPI
       return;
     }
 
-    Monitor& monitor = m_monitorManager.GetMonitors().at(0);
+    Monitor& monitor = m_monitorManager.GetMonitors().at(1);
     m_renderer.SetViewport(monitor.area);
 
     std::chrono::milliseconds previous = Utils::GetMillis();
@@ -62,10 +64,16 @@ namespace WallpaperAPI
       std::chrono::milliseconds current = Utils::GetMillis();
       std::chrono::milliseconds elapsed = current - previous;
 
+      GL_CHECK(glClearColor(0.2f, 0.3f, 0.9f, 1.0f));
+      GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
       float delta = elapsed.count() / 1000.0f;
-      for (auto layer : m_layers)
+      for (auto &layer : m_layers)
       {
-        layer->OnUpdate(delta);
+        Layer::Options& options = layer.second;
+        if (options.enabled) {
+          layer.first->OnUpdate(delta);
+        }
       }
 
       if (Application::GetApp().GetInputManager().IsKeyDown(Input::Key::Delete))
@@ -76,9 +84,12 @@ namespace WallpaperAPI
 #ifndef WG_DIST
       m_imGuiLayer->Begin();
       {
-        for (auto layer : m_layers)
+        for (auto &layer : m_layers)
         {
-          layer->OnImGuiRender();
+          Layer::Options& options = layer.second;
+          if (options.enabled) {
+            layer.first->OnImGuiRender();
+          }
         }
         ImGui::Begin("Flappy Bird");
         ImGui::Text("FPS: %zu (%.3f)", lastFPS, frames / ((current - lastFrameTime).count() / 1000.0));
@@ -105,28 +116,52 @@ namespace WallpaperAPI
       previous = current;
     }
 
-    for (auto layer : m_layers)
+    for (auto &layer : m_layers)
     {
-      layer->OnDetach();
+      layer.first->OnDetach();
     }
 
     ResetWallpaper();
   }
 
-  void Application::AddLayer(Layer* layer)
+  void Application::AddLayer(Layer* layer, bool enabled)
   {
     layer->OnAttach();
-    m_layers.push_back(layer);
+    m_layers.push_back(std::make_pair(layer, Layer::Options{ enabled }));
   }
 
   void Application::RemoveLayer(Layer* layer)
   {
     for (auto it = m_layers.begin();it != m_layers.end();it++)
     {
-      auto currentLayer = *it;
-      if (currentLayer == layer) {
+      auto &currentLayer = *it;
+      if (currentLayer.first == layer) {
         layer->OnDetach();
         m_layers.erase(it);
+        return;
+      }
+    }
+  }
+
+  void Application::EnableLayer(const std::string& id)
+  {
+    for (auto& layer : m_layers)
+    {
+      if (id == layer.first->GetID())
+      {
+        layer.second.enabled = true;
+        return;
+      }
+    }
+  }
+
+  void Application::DisableLayer(const std::string& id)
+  {
+    for (auto& layer : m_layers)
+    {
+      if (id == layer.first->GetID())
+      {
+        layer.second.enabled = false;
         return;
       }
     }

@@ -42,14 +42,21 @@ namespace WallpaperAPI
     GL_CHECK(glUniform1f(transformLoc, f));
   }
 
-  void ShaderProgram::LoadVec3(const char* variable, glm::vec3& vec3)
+  void ShaderProgram::LoadVec3(const char* variable, const glm::vec3& vec3)
   {
     IsValidVariable(variable);
     unsigned int transformLoc = glGetUniformLocation(m_shaderProgram, variable);
     GL_CHECK(glUniform3f(transformLoc, vec3.x, vec3.y, vec3.z));
   }
 
-  void ShaderProgram::LoadVec4(const char* variable, glm::vec4& vec4)
+  void ShaderProgram::LoadVec2(const char* variable, const glm::vec2& vec2)
+  {
+    IsValidVariable(variable);
+    unsigned int transformLoc = glGetUniformLocation(m_shaderProgram, variable);
+    GL_CHECK(glUniform2f(transformLoc, vec2.x, vec2.y));
+  }
+
+  void ShaderProgram::LoadVec4(const char* variable, const glm::vec4& vec4)
   {
     IsValidVariable(variable);
     unsigned int transformLoc = glGetUniformLocation(m_shaderProgram, variable);

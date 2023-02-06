@@ -56,4 +56,5 @@ namespace WallpaperAPI
     GL_CHECK(glEnable(GL_DEPTH_TEST));
   }
 
+  const std::string ImGuiDesktopLayer::ID = "imgui_desktop_layer";
 }

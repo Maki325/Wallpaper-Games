@@ -22,7 +22,7 @@ namespace WallpaperAPI
 
     void Run();
 
-    void AddLayer(Layer* layer);
+    void AddLayer(Layer* layer, bool enabled = true);
     void RemoveLayer(Layer* layer);
 
     void Exit();
@@ -33,6 +33,10 @@ namespace WallpaperAPI
     MonitorManager& GetMonitorManager() { return m_monitorManager; }
     InputManager& GetInputManager() { return m_inputManager; }
     SystemTray::SystemTray& GetSystemTray() { return m_systemTray; }
+
+
+    void EnableLayer(const std::string& id);
+    void DisableLayer(const std::string& id);
   private:
     void ResetWallpaper();
   private:
@@ -47,7 +51,7 @@ namespace WallpaperAPI
 
     SystemTray::SystemTray m_systemTray;
 
-    std::vector<Layer*> m_layers;
+    std::vector<std::pair<Layer*, Layer::Options>> m_layers;
     ImGuiLayer *m_imGuiLayer;
     static Application* s_app;
   };
